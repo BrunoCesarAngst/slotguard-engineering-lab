@@ -96,6 +96,7 @@ python/
 ├── models.py          # Intervalo e Agenda: tipos, invariantes e imutabilidade
 ├── exceptions.py      # HorarioIndisponivelError
 ├── slotguard.py       # Conflitos, disponibilidade e agendamento
+├── demo.py            # Demonstração animada no terminal
 ├── test_models.py     # Testes dos modelos
 └── test_slotguard.py  # Testes das operações e propriedades
 ```
@@ -109,20 +110,47 @@ Na pasta `python/`:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install pytest hypothesis
+python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-No último checkpoint registrado durante o desenvolvimento, a suíte executou **43 casos do pytest sem falhas**. Esse total pode mudar conforme os testes evoluírem. Os testes do Hypothesis geram múltiplos exemplos **dentro** de um único caso contabilizado pelo pytest.
+Na verificação de 6 de novembro de 2026, a suíte executou **44 casos do pytest sem falhas**. Esse total pode mudar conforme os testes evoluírem. Os testes do Hypothesis geram múltiplos exemplos **dentro** de um único caso contabilizado pelo pytest.
+
+### Verificações de qualidade
+
+Com o ambiente virtual ativado, execute na pasta `python/` os mesmos comandos utilizados pelo GitHub Actions:
+
+```bash
+ruff check .
+ruff format --check .
+basedpyright .
+python -m pytest -q
+```
 
 ### Estratégia de verificação
 
 - **Testes de exemplos:** sobreposição parcial, contenção, intervalos consecutivos e limites.
 - **Testes de modelos:** construção válida/inválida, tipos, imutabilidade e integridade da coleção.
 - **Testes parametrizados:** vários cenários usando uma mesma regra de verificação.
-- **Testes baseados em propriedades:** simetria do conflito, indisponibilidade após agendar e rejeição de tentativas duplicadas.
+- **Testes baseados em propriedades:** simetria do conflito, ausência de conflito entre intervalos consecutivos com limite compartilhado, indisponibilidade após agendar e rejeição de tentativas duplicadas.
 
 Uma suíte verde demonstra que os comportamentos exercitados passaram; **não prova ausência de defeitos** nem segurança sob concorrência.
+
+## Demonstração no terminal
+
+Com o ambiente virtual ativado, na pasta `python/`:
+
+```bash
+python demo.py
+```
+
+A demonstração utiliza as operações reais do domínio e apresenta as solicitações progressivamente:
+
+1. Cliente A, das 09:00 às 10:00: reserva confirmada.
+2. Cliente B, das 09:30 às 10:30: tentativa bloqueada por conflito.
+3. Cliente C, das 10:00 às 11:00: reserva confirmada, sem conflito no limite compartilhado.
+
+Ao final, a agenda contém duas reservas, uma tentativa foi bloqueada e a agenda original permanece vazia. As animações e pausas são intencionais para apresentação e ficam apenas em `demo.py`; elas não representam o tempo de execução do algoritmo.
 
 ## Decisões técnicas e trade-offs
 

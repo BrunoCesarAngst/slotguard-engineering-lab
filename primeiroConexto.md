@@ -2,8 +2,24 @@
 
 **Data de referência:** 6 de novembro de 2026  
 **Projeto:** SlotGuard — Engineering Lab  
-**Estado atual:** núcleo Python v0.1 funcional, com 43 testes aprovados.  
+**Estado atual:** núcleo Python v0.1 funcional, com 44 testes aprovados.
+
 **Ambiente:** Mac Apple Silicon, editor Zed, Python 3.14.7.
+
+## Atualização verificada — 6 de novembro de 2026
+
+Esta atualização prevalece sobre os registros históricos abaixo quando houver divergências de estado:
+
+- A propriedade de intervalos consecutivos com limite compartilhado já está implementada em `python/test_slotguard.py`.
+- Verificação local: Ruff lint e format aprovados; BasedPyright com zero erros e avisos; pytest com **44 testes aprovados em 0,17 segundo**.
+- `python/demo.py` existe e contém a demonstração animada com as três solicitações, utilizando as operações reais do domínio.
+- No momento desta conferência, antes do commit de atualização da documentação, a branch `main` local e a remota apontavam para `627619d`, que sucede o commit da demonstração (`f14b699`).
+- O workflow **Python Quality** passou nesse commit: [execução confirmada no GitHub Actions](https://github.com/BrunoCesarAngst/slotguard-engineering-lab/actions/runs/42245524010).
+- A [release v0.1.0](https://github.com/BrunoCesarAngst/slotguard-engineering-lab/releases/tag/v0.1.0) está publicada.
+- Esta atualização de documentação inclui a demonstração, as dependências de desenvolvimento e os comandos de qualidade no README Python.
+- A fase TypeScript permanece planejada. O próximo passo técnico é definir os cenários de referência e iniciar o primeiro teste do domínio, antes da interface visual.
+
+As seções seguintes preservam o histórico anterior; referências a 43 testes, avisos pendentes e publicação ou demonstração não confirmadas descrevem aquele momento.
 
 ---
 

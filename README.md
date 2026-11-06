@@ -29,6 +29,9 @@ A versão inicial oferece:
 
 [Documentação, exemplos e instruções de execução](python/README.md)
 
+A demonstração animada pode ser executada com `python demo.py` na pasta
+`python/`, após preparar o ambiente descrito na documentação acima.
+
 ## Limitações atuais
 
 O núcleo trabalha com intervalos dentro de um único dia
@@ -38,4 +41,3 @@ para solicitações simultâneas.
 ## Engenharia
 
 As verificações automatizadas incluem Ruff, BasedPyright e pytest.
-EOF
