@@ -282,3 +282,23 @@ def test_nao_permite_reserva_duplicada(
     # A agenda permanece com apenas uma reserva
     assert len(atualizada.reservas) == 1
     assert atualizada.reservas == (novo,)
+
+
+@given(
+    numeros=st.lists(
+        st.integers(min_value=0, max_value=1440),
+        min_size=3,
+        max_size=3,
+        unique=True,
+    )
+)
+def test_intervalos_consecutivos(
+    numeros: list[int],
+) -> None:
+    a, b, c = sorted(numeros)
+
+    intervalo_1: Intervalo = Intervalo(a, b)
+    intervalo_2: Intervalo = Intervalo(b, c)
+
+    assert tem_conflito(intervalo_1, intervalo_2) is False
+    assert tem_conflito(intervalo_2, intervalo_1) is False
