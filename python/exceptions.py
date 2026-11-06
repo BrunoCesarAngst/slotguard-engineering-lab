@@ -1,0 +1,2 @@
+class HorarioIndisponivelError(ValueError):
+    pass

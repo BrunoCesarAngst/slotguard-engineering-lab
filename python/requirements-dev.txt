@@ -1,0 +1,4 @@
+basedpyright==1.40.2
+hypothesis==6.170.14
+pytest==9.2.0
+ruff==0.17.4

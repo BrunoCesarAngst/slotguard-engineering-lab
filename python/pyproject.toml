@@ -1,0 +1,27 @@
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E4",  # Imports
+    "E7",  # Estrutura do código
+    "E9",  # Erros de sintaxe
+    "F",   # Pyflakes
+    "I",   # Organização dos imports
+    "B",   # Possíveis bugs
+    "UP",  # Modernização de Python
+]
+
+[tool.basedpyright]
+pythonVersion = "3.14"
+typeCheckingMode = "recommended"
+
+include = [
+    "models.py",
+    "slotguard.py",
+    "exceptions.py",
+    "test_models.py",
+    "test_slotguard.py",
+]

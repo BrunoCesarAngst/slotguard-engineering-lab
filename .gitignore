@@ -1,0 +1,25 @@
+cat > .gitignore <<'EOF'
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+.ruff_cache/
+
+# Arquivos locais e segredos
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# TypeScript
+node_modules/
+dist/
+coverage/
+
+# Java e Quarkus
+.gradle/
+build/
+target/
+EOF
