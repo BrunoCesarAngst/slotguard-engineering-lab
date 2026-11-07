@@ -1,0 +1,25 @@
+{
+  "name": "typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run src/api.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test:integration": "vitest run src/api.integration.test.ts",
+    "test:ui": "vitest run src/tela.test.ts",
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.2",
+    "@types/node": "^26.6.6",
+    "jsdom": "^29.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}
