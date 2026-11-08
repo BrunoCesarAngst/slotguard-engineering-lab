@@ -1,61 +1,145 @@
+from collections.abc import Iterator
+
+import pytest
 from fastapi.testclient import TestClient
 
 from api import app
 
 
-def test_consulta_disponibilidade_para_intervalos_consecutivos() -> None:
-    with TestClient(app) as cliente:
-        resposta = cliente.post(
-            "/disponibilidade",
-            json={
-                "reservas": [{"inicio": 540, "fim": 600}],
-                "solicitacao": {"inicio": 600, "fim": 660},
-            },
-        )
+@pytest.fixture
+def cliente() -> Iterator[TestClient]:
+    with TestClient(app) as cliente_http:
+        yield cliente_http
+
+
+def montar_entrada(
+    *,
+    reservas: list[tuple[int, int]],
+    solicitacao: tuple[int, int],
+) -> dict[str, object]:
+    inicio, fim = solicitacao
+
+    return {
+        "reservas": [
+            {"inicio": inicio_reserva, "fim": fim_reserva}
+            for inicio_reserva, fim_reserva in reservas
+        ],
+        "solicitacao": {"inicio": inicio, "fim": fim},
+    }
+
+
+def test_consulta_disponibilidade_para_intervalos_consecutivos(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(600, 660),
+    )
+
+    resposta = cliente.post("/disponibilidade", json=entrada)
 
     assert resposta.status_code == 200
     assert resposta.json() == {"disponivel": True}
 
 
-def test_consulta_disponibilidade_para_intervalos_conflitantes() -> None:
-    with TestClient(app) as cliente:
-        resposta = cliente.post(
-            "/disponibilidade",
-            json={
-                "reservas": [{"inicio": 540, "fim": 600}],
-                "solicitacao": {"inicio": 570, "fim": 630},
-            },
-        )
+def test_consulta_disponibilidade_para_intervalos_conflitantes(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(570, 630),
+    )
+
+    resposta = cliente.post("/disponibilidade", json=entrada)
 
     assert resposta.status_code == 200
-
     assert resposta.json() == {"disponivel": False}
 
 
-def test_rejeita_solicitacao_com_duracao_zero() -> None:
-    with TestClient(app) as cliente:
-        resposta = cliente.post(
-            "/disponibilidade",
-            json={
-                "reservas": [{"inicio": 540, "fim": 600}],
-                "solicitacao": {"inicio": 600, "fim": 600},
-            },
-        )
+def test_rejeita_solicitacao_com_duracao_zero(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(600, 600),
+    )
+
+    resposta = cliente.post("/disponibilidade", json=entrada)
 
     assert resposta.status_code == 422
-
     assert resposta.json() == {"detail": "Intervalo inválido."}
 
 
-def test_rejeita_reserva_com_duracao_zero() -> None:
-    with TestClient(app) as cliente:
-        resposta = cliente.post(
-            "/disponibilidade",
-            json={
-                "reservas": [{"inicio": 540, "fim": 540}],
-                "solicitacao": {"inicio": 600, "fim": 660},
-            },
-        )
+def test_rejeita_reserva_com_duracao_zero(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 540)],
+        solicitacao=(600, 660),
+    )
+
+    resposta = cliente.post("/disponibilidade", json=entrada)
+
+    assert resposta.status_code == 422
+    assert resposta.json() == {"detail": "Intervalo inválido."}
+
+
+def test_reserva_horario_disponivel_e_retorna_agenda_atualizada(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(600, 660),
+    )
+
+    resposta = cliente.post("/reservas", json=entrada)
+
+    assert resposta.status_code == 201
+    assert resposta.json() == {
+        "reservas": [
+            {"inicio": 540, "fim": 600},
+            {"inicio": 600, "fim": 660},
+        ]
+    }
+
+
+def test_rejeita_reserva_com_horario_conflitante(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(570, 630),
+    )
+
+    resposta = cliente.post("/reservas", json=entrada)
+
+    assert resposta.status_code == 409
+    assert resposta.json() == {"detail": "Horário indisponível."}
+
+
+def test_rejeita_criacao_de_reserva_com_solicitacao_de_duracao_zero(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 600)],
+        solicitacao=(600, 600),
+    )
+
+    resposta = cliente.post("/reservas", json=entrada)
+
+    assert resposta.status_code == 422
+    assert resposta.json() == {"detail": "Intervalo inválido."}
+
+
+def test_rejeita_criacao_com_reserva_existente_de_duracao_zero(
+    cliente: TestClient,
+) -> None:
+    entrada = montar_entrada(
+        reservas=[(540, 540)],
+        solicitacao=(600, 660),
+    )
+
+    resposta = cliente.post("/reservas", json=entrada)
 
     assert resposta.status_code == 422
     assert resposta.json() == {"detail": "Intervalo inválido."}

@@ -21,6 +21,8 @@ O SlotGuard separa a **integridade dos dados** das **regras de negócio** e test
 - Verifica exemplos e propriedades usando **pytest** e **Hypothesis**.
 - Expõe uma consulta HTTP de disponibilidade por uma camada FastAPI que
   reutiliza o domínio existente, consumida pela interface TypeScript.
+- Oferece `POST /reservas` para agendar um intervalo livre e devolver a agenda
+  atualizada. Essa operação ainda não está conectada à interface.
 
 ## Modelo de domínio
 
@@ -99,7 +101,7 @@ python/
 ├── exceptions.py      # HorarioIndisponivelError
 ├── slotguard.py       # Conflitos, disponibilidade e agendamento
 ├── demo.py            # Demonstração animada no terminal
-├── api.py             # Adaptador HTTP para consulta de disponibilidade
+├── api.py             # Adaptador HTTP para disponibilidade e criação de reservas
 ├── test_api.py        # Testes do contrato HTTP
 ├── test_models.py     # Testes dos modelos
 └── test_slotguard.py  # Testes das operações e propriedades
@@ -118,7 +120,7 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
 
-Na verificação local de 8 de novembro de 2026, a suíte executou **48 casos do pytest sem falhas**, incluindo quatro testes da API. Esse total pode mudar conforme os testes evoluírem. Os testes do Hypothesis geram múltiplos exemplos **dentro** de um único caso contabilizado pelo pytest.
+Na verificação local de 8 de novembro de 2026, a suíte executou **52 casos do pytest sem falhas**, incluindo oito testes da API: quatro de disponibilidade e quatro de criação de reservas. Ruff lint e format passaram e BasedPyright não apresentou diagnósticos. Esse total pode mudar conforme os testes evoluírem. Os testes do Hypothesis geram múltiplos exemplos **dentro** de um único caso contabilizado pelo pytest.
 
 ### Verificações de qualidade
 
@@ -137,6 +139,11 @@ python -m pytest -q
 - **Testes de modelos:** construção válida/inválida, tipos, imutabilidade e integridade da coleção.
 - **Testes parametrizados:** vários cenários usando uma mesma regra de verificação.
 - **Testes baseados em propriedades:** simetria do conflito, ausência de conflito entre intervalos consecutivos com limite compartilhado, indisponibilidade após agendar e rejeição de tentativas duplicadas.
+- **Testes HTTP:** disponibilidade livre/ocupada, criação com agenda atualizada,
+  conflito e rejeição de intervalos de duração zero na solicitação ou nas
+  reservas existentes. A fixture `cliente` cria e fecha um `TestClient` por
+  teste. `montar_entrada()` monta o JSON sem aplicar validação de domínio;
+  as rotas, os dados dos cenários e os resultados esperados ficam explícitos.
 
 Uma suíte verde demonstra que os comportamentos exercitados passaram; **não prova ausência de defeitos** nem segurança sob concorrência.
 
@@ -173,6 +180,55 @@ do repositório. A documentação interativa fica em
 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
 Veja a [retomada e instalação no README principal](../README.md#retomar-o-desenvolvimento).
 
+## Criação HTTP de reserva
+
+`POST /reservas` recebe o mesmo formato de agenda e solicitação:
+
+```json
+{
+  "reservas": [{ "inicio": 540, "fim": 600 }],
+  "solicitacao": { "inicio": 600, "fim": 660 }
+}
+```
+
+Quando a reserva é aceita, responde com status `201` e a agenda atualizada:
+
+```json
+{
+  "reservas": [
+    { "inicio": 540, "fim": 600 },
+    { "inicio": 600, "fim": 660 }
+  ]
+}
+```
+
+| Situação | Status | Corpo de exemplo |
+|---|---|---|
+| Solicitação válida e disponível | `201` | Agenda com a reserva anterior e a nova |
+| Solicitação válida que conflita com uma reserva | `409` | `{"detail": "Horário indisponível."}` |
+| Solicitação com duração zero | `422` | `{"detail": "Intervalo inválido."}` |
+| Reserva existente com duração zero | `422` | `{"detail": "Intervalo inválido."}` |
+
+`converter_entrada()` constrói os objetos de domínio usados pelas duas
+rotas. Em `/reservas`, erros de intervalo durante essa conversão viram `422`;
+o conflito lançado por `agendar()` é tratado separadamente como `409`.
+Isso preserva a distinção mesmo com `HorarioIndisponivelError` herdando de
+`ValueError`. A decisão de agendamento continua em `slotguard.py`.
+
+Cada chamada recebe a agenda a considerar e devolve uma nova versão.
+**O servidor não persiste as reservas**, e o status `201` não indica gravação
+em banco de dados. Para uma operação posterior, o cliente deve enviar a
+agenda devolvida pela operação anterior. Permanecem as limitações de
+concorrência descritas abaixo.
+
+**A interface TypeScript ainda oferece apenas consulta de disponibilidade.**
+Ela não chama `/reservas`, não apresenta uma ação de reservar e não mantém
+uma agenda atualizada por essa operação. O encaminhamento do Vite atual
+cobre `/disponibilidade`; a integração de reservas pelo navegador ainda será
+implementada. Para experimentar a nova rota, use a documentação da API em
+`http://127.0.0.1:8000/docs`, reiniciando o servidor se o código Python tiver
+sido alterado desde sua inicialização.
+
 ## Demonstração no terminal
 
 Com o ambiente virtual ativado, na pasta `python/`:
@@ -203,8 +259,9 @@ Ao final, a agenda contém duas reservas, uma tentativa foi bloqueada e a agenda
 - Os intervalos estão restritos a **um dia**, representado por valores de `0` a `1440`; ainda não há datas, fusos, horário de verão ou reservas que atravessem a meia-noite.
 - Não existem cadastro de clientes, profissionais, serviços, duração comercial ou horários de funcionamento.
 - O núcleo é independente de HTTP e de interface gráfica. O projeto possui
-  uma API de consulta FastAPI e uma interface TypeScript, mas ainda não há
-  autenticação nem persistência.
+  uma API FastAPI de consulta e criação de reservas e uma interface TypeScript
+  que ainda oferece apenas consulta. Autenticação e persistência permanecem
+  pendentes.
 - A agenda está em memória e a operação é uma transformação imutável de valores.
 - **Não há garantia de exclusividade em operações simultâneas.** Duas chamadas baseadas na mesma agenda antiga podem aceitar o mesmo horário. A proteção real contra concorrência exigirá coordenação do estado e garantias transacionais na persistência.
 

@@ -79,6 +79,13 @@ o script estiver em execução.
 
 - Interface: http://127.0.0.1:5173/
 - Documentação interativa da API: http://127.0.0.1:8000/docs
+- A API oferece `POST /disponibilidade` para consulta e `POST /reservas`
+  para devolver uma agenda com uma nova reserva aceita. A interface ainda
+  oferece **apenas consulta**; não há botão de reservar nem atualização da
+  agenda pela tela nesta etapa.
+- `POST /reservas` responde `201` com a agenda atualizada, `409` quando há
+  conflito e `422` para intervalos inválidos. Cada requisição fornece sua
+  própria agenda; o servidor não persiste as reservas.
 - Reserva fixa: 09h–10h. Os campos “Início” e “Fim” da solicitação são
   editáveis, com valores iniciais de 10h e 11h.
 - Ao clicar, a tela converte os horários de `HH:mm` para minutos e envia
@@ -100,15 +107,26 @@ o script estiver em execução.
 Os campos editáveis estão implementados e conectados à API real. A etapa
 inclui rótulos associados aos campos, valores iniciais, leitura no clique,
 conversão para minutos, bloqueio de campos vazios e recuperação após correção.
-A nova etapa diferencia os erros de validação recebidos da API das falhas
-de comunicação, sem duplicar as regras de intervalo do domínio Python.
+A mensagem de validação e sua recuperação foram publicadas no commit
+`0a3e004`, com os workflows Python Quality e TypeScript Quality aprovados.
 
-Verificações locais desta etapa: **5 testes do cliente HTTP**, **12 testes da
-tela** e **2 testes de integração real** — **19 testes TypeScript** ao todo.
-O typecheck também foi aprovado. Os testes da tela utilizam jsdom; os testes
-de integração chamam o servidor Python real e verificam sucesso e validação.
-O Python não foi alterado nesta etapa; sua suíte permanece com **48 testes**,
-aprovados no CI do commit anterior.
+A etapa atual acrescenta `POST /reservas`, reutilizando `agendar()` para
+devolver uma nova agenda ou rejeitar conflitos. `converter_entrada()`
+centraliza a construção de `Agenda` e `Intervalo` para as duas rotas.
+Os testes HTTP usam a fixture `cliente` para gerenciar o `TestClient` e
+`montar_entrada()` para preparar o JSON; as respostas esperadas permanecem
+explícitas em cada teste.
+
+Verificações locais desta etapa: Ruff lint e format aprovados, BasedPyright
+sem diagnósticos e **52 testes Python aprovados**, incluindo **8 testes da
+API**. Os **2 testes de integração TypeScript existentes** também passaram;
+eles verificam sucesso e validação em `/disponibilidade`, não a criação de
+reservas. O novo endpoint é exercitado pelos testes Python com `TestClient`.
+
+A suíte TypeScript permanece com **5 testes do cliente HTTP**, **12 testes
+da tela** e **2 testes de integração real** — **19 testes** ao todo, aprovados
+no CI anterior. A interface ainda oferece **apenas consulta**. A conexão
+de uma ação de reservar ao novo endpoint será uma etapa posterior, com TDD.
 
 Em 8 de novembro, foram confirmados no navegador os cenários abaixo,
 com a reserva existente fixa de 09h–10h:
@@ -123,11 +141,11 @@ com a reserva existente fixa de 09h–10h:
 | Solicitação 10h–10h | Intervalo inválido. Botão reabilitado após a resposta |
 | Corrigir o fim para 11h e consultar novamente | Horário disponível, mensagem de validação removida e botão habilitado |
 
-Essa conferência no navegador é uma verificação manual, separada dos testes
-automatizados. Os campos editáveis foram publicados no commit `e323739`,
-com os workflows Python Quality e TypeScript Quality aprovados. A nova
-apresentação das mensagens de validação foi verificada localmente e ainda
-aguarda commit, publicação e confirmação dos dois workflows no novo commit.
+Essa conferência no navegador é uma verificação manual da consulta,
+separada dos testes automatizados. Os campos editáveis foram publicados
+no commit `e323739`, e a apresentação da validação em `0a3e004`.
+`POST /reservas` e as refatorações desta etapa foram verificados localmente
+e ainda aguardam commit, publicação e confirmação dos dois workflows.
 
 Continuar com TDD, mudanças pequenas e código escrito pelo autor do projeto.
 Não substituir a lógica Python por uma nova implementação TypeScript.
@@ -145,6 +163,10 @@ npm run test:integration
 
 Somente `test:integration` depende da API ligada; `bash iniciar.sh` já a fornece.
 Os testes da tela usam jsdom, sem abrir um navegador.
+
+Após alterar arquivos Python, encerre `iniciar.sh` com Ctrl+C e execute-o
+novamente antes da integração: o servidor Python atual não recarrega o
+código automaticamente.
 
 Na raiz do projeto, as verificações Python podem ser executadas sem ativar
 o ambiente virtual:
