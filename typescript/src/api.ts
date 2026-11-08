@@ -1,4 +1,4 @@
-interface IntervaloEntrada {
+export interface IntervaloEntrada {
   inicio: number;
   fim: number;
 }

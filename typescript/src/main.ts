@@ -7,9 +7,11 @@ if (container === null) {
   throw new Error("Elemento #app não encontrado");
 }
 
-const consulta = {
-  reservas: [{ inicio: 540, fim: 600 }],
-  solicitacao: { inicio: 600, fim: 660 },
-};
+const reservas = [{ inicio: 540, fim: 600 }];
 
-montarTela(container, () => consultarDisponibilidade(consulta));
+montarTela(container, (solicitacao) =>
+  consultarDisponibilidade({
+    reservas,
+    solicitacao,
+  }),
+);

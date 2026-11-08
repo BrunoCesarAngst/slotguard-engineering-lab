@@ -2,6 +2,7 @@
 
 import {
   findByText,
+  getByLabelText,
   getByRole,
   getByText,
   queryByText,
@@ -199,4 +200,174 @@ test("mostra Consultando… enquanto aguarda a consulta", async () => {
   await findByText(container, "Horário disponível");
 
   expect(queryByText(container, "Consultando…")).toBeNull();
+});
+
+test("exibe campos de início e fim com os horários iniciais", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  // Escreva aqui as verificações dos dois campos.
+  expect(inicio.type).toBe("time")
+  expect(inicio.value).toBe("10:00")
+  expect(fim.type).toBe("time")
+  expect(fim.value).toBe("11:00")
+});
+
+test("consulta usando os horários editados convertidos para minutos", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  inicio.value = "09:30";
+  fim.value = "10:30";
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário disponível");
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+  expect(consultar).toHaveBeenCalledWith({
+    inicio: 570,
+    fim: 630,
+  });
+});
+
+test("pede o horário de início quando o campo está vazio", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  inicio.value = "";
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  const resultado = await findByText(
+    container,
+    "Preencha o horário de início.",
+  );
+
+  expect(resultado.textContent).toBe("Preencha o horário de início.");
+  expect(consultar).not.toHaveBeenCalled();
+});
+
+test("pede o horário de fim quando o campo está vazio", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  inicio.value = "";
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  const resultado = await findByText(
+    container,
+    "Preencha o horário de fim.",
+  );
+
+  expect(resultado.textContent).toBe("Preencha o horário de fim.");
+  expect(consultar).not.toHaveBeenCalled();
+});
+
+test("permite consultar após corrigir o início vazio", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  inicio.value = "";
+  botao.click();
+
+  await findByText(container, "Preencha o horário de início.");
+  expect(consultar).not.toHaveBeenCalled();
+
+  inicio.value = "10:00";
+  botao.click();
+
+  await findByText(container, "Horário disponível");
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+  expect(consultar).toHaveBeenCalledWith({
+    inicio: 600,
+    fim: 660,
+  });
+
+  expect(
+    queryByText(container, "Preencha o horário de início."),
+  ).toBeNull();
 });
