@@ -88,6 +88,10 @@ o script estiver em execução.
   Após corrigir o campo, é possível consultar novamente.
 - O botão consulta a API real, mostra “Consultando…” e fica desabilitado
   durante a espera. Depois apresenta disponibilidade ou uma mensagem de erro.
+- Quando a API responde com `422` e um `detail` textual, o cliente lança
+  `ErroValidacaoApi` e a tela apresenta essa mensagem, como “Intervalo inválido.”.
+  Outros erros mantêm a mensagem “Não foi possível consultar a disponibilidade”.
+  Após corrigir os horários, é possível consultar novamente.
 - O Vite encaminha `/disponibilidade` para a API local. Essa configuração
   vale para desenvolvimento; não constitui configuração de publicação.
 
@@ -96,13 +100,17 @@ o script estiver em execução.
 Os campos editáveis estão implementados e conectados à API real. A etapa
 inclui rótulos associados aos campos, valores iniciais, leitura no clique,
 conversão para minutos, bloqueio de campos vazios e recuperação após correção.
+A nova etapa diferencia os erros de validação recebidos da API das falhas
+de comunicação, sem duplicar as regras de intervalo do domínio Python.
 
-Verificações locais desta entrega: **48 testes Python**, **5 testes do cliente
-HTTP**, **11 testes da tela** e **1 teste de integração real** — **17 testes
-TypeScript** ao todo. O typecheck também foi aprovado. Os testes da tela
-utilizam jsdom; o teste de integração chama o servidor Python real.
+Verificações locais desta etapa: **5 testes do cliente HTTP**, **12 testes da
+tela** e **2 testes de integração real** — **19 testes TypeScript** ao todo.
+O typecheck também foi aprovado. Os testes da tela utilizam jsdom; os testes
+de integração chamam o servidor Python real e verificam sucesso e validação.
+O Python não foi alterado nesta etapa; sua suíte permanece com **48 testes**,
+aprovados no CI do commit anterior.
 
-Em 8 de novembro, foram confirmados no navegador os cinco cenários abaixo,
+Em 8 de novembro, foram confirmados no navegador os cenários abaixo,
 com a reserva existente fixa de 09h–10h:
 
 | Cenário | Resultado observado |
@@ -112,11 +120,14 @@ com a reserva existente fixa de 09h–10h:
 | Início vazio e fim preenchido | Preencha o horário de início. |
 | Fim vazio e início preenchido | Preencha o horário de fim. |
 | Corrigir o campo vazio e consultar | Consulta realizada e mensagem anterior substituída pelo resultado |
+| Solicitação 10h–10h | Intervalo inválido. Botão reabilitado após a resposta |
+| Corrigir o fim para 11h e consultar novamente | Horário disponível, mensagem de validação removida e botão habilitado |
 
 Essa conferência no navegador é uma verificação manual, separada dos testes
-automatizados. Os workflows publicados do commit `f06d853` passaram antes
-desta entrega. As alterações dos campos editáveis ainda precisam de revisão,
-commit, publicação e confirmação dos dois workflows no novo commit.
+automatizados. Os campos editáveis foram publicados no commit `e323739`,
+com os workflows Python Quality e TypeScript Quality aprovados. A nova
+apresentação das mensagens de validação foi verificada localmente e ainda
+aguarda commit, publicação e confirmação dos dois workflows no novo commit.
 
 Continuar com TDD, mudanças pequenas e código escrito pelo autor do projeto.
 Não substituir a lógica Python por uma nova implementação TypeScript.

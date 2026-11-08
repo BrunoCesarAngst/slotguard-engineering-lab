@@ -11,6 +11,8 @@ import { afterEach, expect, test, vi } from "vitest";
 
 import { montarTela } from "./tela";
 
+import { ErroValidacaoApi } from "./api"
+
 afterEach(() => {
   document.body.replaceChildren();
 });
@@ -370,4 +372,31 @@ test("permite consultar após corrigir o início vazio", async () => {
   expect(
     queryByText(container, "Preencha o horário de início."),
   ).toBeNull();
+});
+
+test("mostra a mensagem de validação devolvida pela API", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockRejectedValue(
+      new ErroValidacaoApi("Intervalo inválido."),
+    );
+
+  montarTela(container, consultar);
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  const resultado = await findByText(
+    container,
+    "Intervalo inválido.",
+  );
+
+  expect(resultado.textContent).toBe("Intervalo inválido.");
+  expect(consultar).toHaveBeenCalledTimes(1);
 });

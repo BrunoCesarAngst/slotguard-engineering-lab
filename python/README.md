@@ -159,6 +159,12 @@ Uma consulta válida responde com status `200` e `{"disponivel": true}` ou
 consulta. Dados de entrada inválidos respondem com `422`; por exemplo,
 um intervalo de duração zero produz `{"detail": "Intervalo inválido."}`.
 
+A interface TypeScript reconhece o `detail` textual de um `422` como
+`ErroValidacaoApi` e apresenta a mensagem ao usuário. Após corrigir os
+horários, é possível consultar novamente. Falhas de comunicação e outros
+erros continuam com uma mensagem genérica na tela. Essa adaptação não altera
+o contrato HTTP nem as regras de validação do domínio Python.
+
 Cada requisição informa as reservas a consultar. Este endpoint não cria
 reservas nem mantém uma agenda persistente no servidor.
 

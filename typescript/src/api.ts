@@ -8,6 +8,8 @@ interface ConsultaDisponibilidadeEntrada {
   solicitacao: IntervaloEntrada;
 }
 
+export class ErroValidacaoApi extends Error {}
+
 export async function consultarDisponibilidade(
   consulta: ConsultaDisponibilidadeEntrada,
   urlBase: string = "",
@@ -21,6 +23,19 @@ export async function consultarDisponibilidade(
   });
 
   if (!resposta.ok) {
+    if (resposta.status === 422) {
+      const erro: unknown = await resposta.json()
+
+      if (
+        typeof erro === "object" &&
+        erro !== null &&
+        "detail" in erro &&
+        typeof erro.detail === "string"
+      ) {
+        throw new ErroValidacaoApi(erro.detail);
+      }
+    }
+
     throw new Error(
       `Erro ao consultar disponibilidade: HTTP ${resposta.status}`,
     );

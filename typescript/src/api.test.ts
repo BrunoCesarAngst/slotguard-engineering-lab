@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 
-import { consultarDisponibilidade } from "./api";
+import { consultarDisponibilidade, ErroValidacaoApi } from "./api";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -62,9 +62,10 @@ test("lança erro quando a API responde com 422", async () => {
 
   vi.stubGlobal("fetch", fetchSimulado);
 
-  await expect(
-    consultarDisponibilidade(consulta),
-  ).rejects.toThrow("Erro ao consultar disponibilidade: HTTP 422");
+  const promessa = consultarDisponibilidade(consulta)
+
+  await expect(promessa).rejects.toBeInstanceOf(ErroValidacaoApi)
+  await expect(promessa).rejects.toThrow("Intervalo inválido.");
 });
 
 test("rejeita disponibilidade recebida como texto", async () => {

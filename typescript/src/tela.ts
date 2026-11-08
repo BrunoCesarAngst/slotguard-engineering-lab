@@ -1,4 +1,5 @@
 import type { IntervaloEntrada } from "./api";
+import { ErroValidacaoApi } from "./api";
 
 function converterParaMinutos(horario: string): number {
   const [horas, minutos] = horario.split(":");
@@ -58,8 +59,12 @@ export function montarTela(
       } else {
         resultado.textContent = "Horário indisponível";
       }
-    } catch {
-      resultado.textContent = "Não foi possível consultar a disponibilidade";
+    } catch (erro: unknown) {
+      if (erro instanceof ErroValidacaoApi) {
+        resultado.textContent = erro.message
+      } else {
+        resultado.textContent = "Não foi possível consultar a disponibilidade";
+      }
     } finally {
       botao.disabled = false;
     }
