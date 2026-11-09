@@ -1333,3 +1333,203 @@ test("mantém a agenda exibida em ordem após reservar um horário anterior", as
     fim: 600,
   });
 });
+
+test("limpa o resultado da consulta ao editar o início", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário disponível");
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  inicio.value = "09:30";
+  inicio.dispatchEvent(new Event("input", { bubbles: true }));
+
+  expect(
+    queryByText(container, "Horário disponível"),
+  ).toBeNull();
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+});
+
+test("limpa o resultado da consulta ao editar o fim", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  montarTela(container, consultar);
+
+  const botao = getByRole(container, "button", {
+    name: "Consultar disponibilidade",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário disponível");
+
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  fim.value = "11:30";
+  fim.dispatchEvent(new Event("input", { bubbles: true }));
+
+  expect(
+    queryByText(container, "Horário disponível"),
+  ).toBeNull();
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+});
+
+test("ignora o resultado da consulta quando os horários mudam durante a espera", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  let concluirConsulta!: (disponivel: boolean) => void;
+
+  const consultaPendente = new Promise<boolean>((resolve) => {
+    concluirConsulta = resolve;
+  });
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockReturnValue(consultaPendente);
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue([]);
+
+  montarTela(container, consultar, reservar);
+
+  const botaoConsultar = getByRole<HTMLButtonElement>(
+    container,
+    "button",
+    { name: "Consultar disponibilidade" },
+  );
+
+  const botaoReservar = getByRole<HTMLButtonElement>(
+    container,
+    "button",
+    { name: "Reservar horário" },
+  );
+
+  botaoConsultar.click();
+
+  expect(getByText(container, "Consultando…").textContent)
+    .toBe("Consultando…");
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+
+  inicio.value = "09:30";
+  inicio.dispatchEvent(new Event("input", { bubbles: true }));
+
+  concluirConsulta(true);
+  await consultaPendente;
+
+  expect(
+    queryByText(container, "Horário disponível"),
+  ).toBeNull();
+
+  expect(
+    queryByText(container, "Consultando…"),
+  ).toBeNull();
+
+  expect(botaoConsultar.disabled).toBe(false);
+  expect(botaoReservar.disabled).toBe(false);
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+  expect(consultar).toHaveBeenCalledWith({
+    inicio: 600,
+    fim: 660,
+  });
+  expect(reservar).not.toHaveBeenCalled();
+});
+
+test("ignora o erro da consulta quando os horários mudam durante a espera", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  let falharConsulta!: (erro: Error) => void;
+
+  const consultaPendente = new Promise<boolean>((_resolve, reject) => {
+    falharConsulta = reject;
+  });
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockReturnValue(consultaPendente);
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue([]);
+
+  montarTela(container, consultar, reservar);
+
+  const botaoConsultar = getByRole<HTMLButtonElement>(
+    container,
+    "button",
+    { name: "Consultar disponibilidade" },
+  );
+
+  const botaoReservar = getByRole<HTMLButtonElement>(
+    container,
+    "button",
+    { name: "Reservar horário" },
+  );
+
+  botaoConsultar.click();
+
+  expect(getByText(container, "Consultando…").textContent)
+    .toBe("Consultando…");
+
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  fim.value = "11:30";
+  fim.dispatchEvent(new Event("input", { bubbles: true }));
+
+  falharConsulta(new Error("Falha na comunicação"));
+  await consultaPendente.catch(() => undefined);
+
+  expect(
+    queryByText(container, "Não foi possível consultar a disponibilidade"),
+  ).toBeNull();
+
+  expect(
+    queryByText(container, "Consultando…"),
+  ).toBeNull();
+
+  expect(botaoConsultar.disabled).toBe(false);
+  expect(botaoReservar.disabled).toBe(false);
+
+  expect(consultar).toHaveBeenCalledTimes(1);
+  expect(reservar).not.toHaveBeenCalled();
+});

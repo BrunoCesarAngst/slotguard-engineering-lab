@@ -71,6 +71,19 @@ export function montarTela(
   const botoes = [botao];
 
   const resultado = document.createElement("p");
+
+  let versaoHorarios = 0;
+
+  inicio.addEventListener("input", () => {
+    versaoHorarios += 1;
+    resultado.textContent = "";
+  });
+
+  fim.addEventListener("input", () => {
+    versaoHorarios += 1;
+    resultado.textContent = "";
+  });
+
   botao.addEventListener("click", async () => {
 
     if (inicio.value === "") {
@@ -88,17 +101,28 @@ export function montarTela(
     });
     resultado.textContent = "Consultando…"
 
+    const versaoConsulta = versaoHorarios;
+
     try {
       const disponivel = await consultar({
         inicio: converterParaMinutos(inicio.value),
         fim: converterParaMinutos(fim.value),
       });
+
+      if (versaoConsulta !== versaoHorarios) {
+        return;
+      }
+
       if (disponivel) {
         resultado.textContent = "Horário disponível";
       } else {
         resultado.textContent = "Horário indisponível";
       }
     } catch (erro: unknown) {
+      if (versaoConsulta !== versaoHorarios) {
+        return;
+      }
+
       if (erro instanceof ErroValidacaoApi) {
         resultado.textContent = erro.message
       } else {

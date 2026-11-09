@@ -99,10 +99,20 @@ o script estiver em execução.
   de validade dos intervalos e de conflito permanecem no domínio Python.
 - Campos vazios exibem uma orientação e impedem a operação. Após corrigir
   o campo, é possível tentar novamente.
+- Editar “Início” ou “Fim” limpa a mensagem de resultado, sem iniciar outra
+  chamada à API e sem modificar a agenda. Se houver uma consulta pendente,
+  seu resultado ou erro será ignorado após qualquer edição dos horários,
+  mesmo que os valores voltem aos anteriores. Isso descarta a apresentação
+  da resposta antiga; não cancela a requisição HTTP.
 - Durante cada operação, os dois botões ficam desabilitados e a tela mostra
-  “Consultando…” ou “Reservando…”. Isso impede iniciar uma consulta durante
+  inicialmente “Consultando…” ou “Reservando…”. Editar os campos limpa essa
+  mensagem, mas mantém os botões bloqueados até a operação terminar.
+  Isso impede iniciar uma consulta durante
   uma reserva ou uma reserva durante uma consulta na mesma tela. Ambos os
   botões são reabilitados ao terminar, inclusive em caso de erro.
+- O descarte de respostas antigas se aplica à consulta. Uma reserva enviada
+  continua sendo processada; se aceita, atualiza a agenda e apresenta a
+  confirmação mesmo que os campos tenham sido editados durante a espera.
 - A consulta mostra “Horário disponível” ou “Horário indisponível”.
 - A reserva aceita mostra “Horário reservado”. A agenda retornada substitui
   a agenda local, atualiza a lista exibida sem duplicar itens e passa a ser
@@ -129,8 +139,8 @@ na tela. `main.ts` fornece a agenda inicial a `montarTela`, que formata os
 intervalos para leitura. O domínio Python continua responsável pelas decisões
 de disponibilidade e agendamento.
 
-A estrutura TypeScript reúne **17 testes do cliente HTTP**, **32 testes da
-interface** e **5 testes de integração real** — **54 casos** ao todo. A integração
+A estrutura TypeScript reúne **17 testes do cliente HTTP**, **36 testes da
+interface** e **5 testes de integração real** — **58 casos** ao todo. A integração
 cobre consulta disponível, validação da consulta, reserva consecutiva, conflito
 e validação da reserva. Os testes da interface usam funções simuladas para
 verificar mensagens, conversão dos horários, campos vazios, recuperação após
@@ -141,9 +151,12 @@ quando há conflito. O estado de agenda vazia e a ocultação da orientação ap
 a primeira reserva aceita também são verificados por testes automatizados.
 Três testes adicionais cobrem a ordem de início na exibição inicial, a
 preservação da agenda original e a ordenação após reservar um horário anterior.
+Outros quatro testes verificam a limpeza da mensagem ao editar cada campo e o
+descarte de resultados e erros de consultas cujos horários mudaram durante a
+espera, com reabilitação dos dois botões ao terminar.
 
 Na verificação final local de 9 de novembro de 2026, passaram a checagem de
-tipos TypeScript e todos os **54 testes TypeScript**, incluindo a integração
+tipos TypeScript e todos os **58 testes TypeScript**, incluindo a integração
 com a API real. Também passaram Ruff lint, Ruff format, BasedPyright,
 os **52 testes Python** e `git diff --check`. Esses resultados locais não
 confirmam publicação nem aprovação do CI para as alterações atuais.
