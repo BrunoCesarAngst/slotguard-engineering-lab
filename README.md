@@ -105,14 +105,16 @@ o script estiver em execução.
   mesmo que os valores voltem aos anteriores. Isso descarta a apresentação
   da resposta antiga; não cancela a requisição HTTP.
 - Durante cada operação, os dois botões ficam desabilitados e a tela mostra
-  inicialmente “Consultando…” ou “Reservando…”. Editar os campos limpa essa
-  mensagem, mas mantém os botões bloqueados até a operação terminar.
-  Isso impede iniciar uma consulta durante
-  uma reserva ou uma reserva durante uma consulta na mesma tela. Ambos os
-  botões são reabilitados ao terminar, inclusive em caso de erro.
-- O descarte de respostas antigas se aplica à consulta. Uma reserva enviada
-  continua sendo processada; se aceita, atualiza a agenda e apresenta a
-  confirmação mesmo que os campos tenham sido editados durante a espera.
+  inicialmente “Consultando…” ou “Reservando…”. Isso impede iniciar uma
+  consulta durante uma reserva ou uma reserva durante uma consulta na mesma
+  tela. Ambos os botões são reabilitados ao terminar, inclusive em caso de erro.
+- Durante a reserva, os campos “Início” e “Fim” também ficam desabilitados,
+  preservando os horários enviados até a resposta. São reabilitados no fim,
+  tanto após sucesso quanto após erro. Campos vazios são verificados antes
+  desse bloqueio.
+- Durante a consulta, os campos continuam editáveis. Editá-los limpa a
+  mensagem e invalida a resposta pendente, mas mantém os botões bloqueados
+  até a consulta terminar. O descarte de respostas antigas se aplica à consulta.
 - A consulta mostra “Horário disponível” ou “Horário indisponível”.
 - A reserva aceita mostra “Horário reservado”. A agenda retornada substitui
   a agenda local, atualiza a lista exibida sem duplicar itens e passa a ser
@@ -139,8 +141,8 @@ na tela. `main.ts` fornece a agenda inicial a `montarTela`, que formata os
 intervalos para leitura. O domínio Python continua responsável pelas decisões
 de disponibilidade e agendamento.
 
-A estrutura TypeScript reúne **17 testes do cliente HTTP**, **36 testes da
-interface** e **5 testes de integração real** — **58 casos** ao todo. A integração
+A estrutura TypeScript reúne **17 testes do cliente HTTP**, **38 testes da
+interface** e **5 testes de integração real** — **60 casos** ao todo. A integração
 cobre consulta disponível, validação da consulta, reserva consecutiva, conflito
 e validação da reserva. Os testes da interface usam funções simuladas para
 verificar mensagens, conversão dos horários, campos vazios, recuperação após
@@ -154,9 +156,11 @@ preservação da agenda original e a ordenação após reservar um horário ante
 Outros quatro testes verificam a limpeza da mensagem ao editar cada campo e o
 descarte de resultados e erros de consultas cujos horários mudaram durante a
 espera, com reabilitação dos dois botões ao terminar.
+Dois testes com promessa controlada verificam o bloqueio dos campos durante
+a reserva e sua reabilitação após sucesso ou falha.
 
 Na verificação final local de 9 de novembro de 2026, passaram a checagem de
-tipos TypeScript e todos os **58 testes TypeScript**, incluindo a integração
+tipos TypeScript e todos os **60 testes TypeScript**, incluindo a integração
 com a API real. Também passaram Ruff lint, Ruff format, BasedPyright,
 os **52 testes Python** e `git diff --check`. Esses resultados locais não
 confirmam publicação nem aprovação do CI para as alterações atuais.

@@ -164,6 +164,10 @@ export function montarTela(
       botoes.forEach((botao) => {
         botao.disabled = true;
       });
+
+      inicio.disabled = true;
+      fim.disabled = true;
+
       resultado.textContent = "Reservando…";
 
       try {
@@ -177,7 +181,7 @@ export function montarTela(
         resultado.textContent = "Horário reservado";
       } catch (erro: unknown) {
         if (
-          erro instanceof ErroConflitoApi  ||
+          erro instanceof ErroConflitoApi ||
           erro instanceof ErroValidacaoApi
         ) {
           resultado.textContent = erro.message;
@@ -188,6 +192,9 @@ export function montarTela(
         botoes.forEach((botao) => {
           botao.disabled = false;
         });
+
+        inicio.disabled = false;
+        fim.disabled = false;
       }
     });
 

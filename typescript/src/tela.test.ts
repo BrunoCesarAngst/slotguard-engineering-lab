@@ -1533,3 +1533,121 @@ test("ignora o erro da consulta quando os horários mudam durante a espera", asy
   expect(consultar).toHaveBeenCalledTimes(1);
   expect(reservar).not.toHaveBeenCalled();
 });
+
+test("desabilita os campos durante a reserva e reabilita ao terminar", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  let concluirReserva!: (reservas: IntervaloEntrada[]) => void;
+
+  const reservaPendente = new Promise<IntervaloEntrada[]>((resolve) => {
+    concluirReserva = resolve;
+  });
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockReturnValue(reservaPendente);
+
+  montarTela(container, consultar, reservar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  expect(inicio.disabled).toBe(false);
+  expect(fim.disabled).toBe(false);
+
+  botao.click();
+
+  try {
+    expect(inicio.disabled).toBe(true);
+    expect(fim.disabled).toBe(true);
+
+    expect(reservar).toHaveBeenCalledTimes(1);
+    expect(reservar).toHaveBeenCalledWith({
+      inicio: 600,
+      fim: 660,
+    });
+  } finally {
+    concluirReserva([
+      { inicio: 540, fim: 600 },
+      { inicio: 600, fim: 660 },
+    ]);
+
+    await findByText(container, "Horário reservado");
+  }
+
+  expect(inicio.disabled).toBe(false);
+  expect(fim.disabled).toBe(false);
+});
+
+test("reabilita os campos quando a reserva falha", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  let falharReserva!: (erro: Error) => void;
+
+  const reservaPendente = new Promise<IntervaloEntrada[]>(
+    (_resolve, reject) => {
+      falharReserva = reject;
+    },
+  );
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockReturnValue(reservaPendente);
+
+  montarTela(container, consultar, reservar);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  botao.click();
+
+  try {
+    expect(inicio.disabled).toBe(true);
+    expect(fim.disabled).toBe(true);
+    expect(reservar).toHaveBeenCalledTimes(1);
+  } finally {
+    falharReserva(new Error("Falha na comunicação"));
+
+    await findByText(
+      container,
+      "Não foi possível reservar o horário",
+    );
+  }
+
+  expect(inicio.disabled).toBe(false);
+  expect(fim.disabled).toBe(false);
+});
