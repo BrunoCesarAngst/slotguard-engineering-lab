@@ -84,3 +84,53 @@ jobs:
       - name: Build publication image
         working-directory: .
         run: docker build -t slotguard:ci .
+
+      - name: Test publication container
+        working-directory: typescript
+        shell: bash
+        run: |
+          encerrar() {
+            resultado=$?
+
+            if [[ "$resultado" -ne 0 ]]; then
+              docker logs slotguard-ci || true
+            fi
+
+            docker rm -f slotguard-ci > /dev/null 2>&1 || true
+          }
+
+          trap encerrar EXIT
+
+          docker run --detach \
+            --name slotguard-ci \
+            --publish 127.0.0.1:8000:10000 \
+            --env PORT=10000 \
+            slotguard:ci
+
+          pronto=false
+
+          for tentativa in {1..30}; do
+            if curl --fail --silent --max-time 2 \
+              http://127.0.0.1:8000/openapi.json \
+              > /dev/null; then
+              pronto=true
+              break
+            fi
+
+            sleep 1
+          done
+
+          if [[ "$pronto" != true ]]; then
+            echo "O contêiner não ficou pronto."
+            exit 1
+          fi
+
+          curl --fail --silent --show-error --max-time 10 \
+            http://127.0.0.1:8000/ \
+            | python -c 'import sys; assert "<title>SlotGuard</title>" in sys.stdin.read()'
+
+          curl --fail --silent --show-error --max-time 10 \
+            http://127.0.0.1:8000/docs \
+            > /dev/null
+
+          npm run test:integration
