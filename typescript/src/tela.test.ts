@@ -2,9 +2,11 @@
 
 import {
   findByText,
+  getAllByRole,
   getByLabelText,
   getByRole,
   getByText,
+  queryAllByRole,
   queryByText,
   within,
 } from "@testing-library/dom";
@@ -1110,4 +1112,76 @@ test("mantém a agenda exibida quando a reserva conflita", async () => {
     fim: 630,
   });
   expect(queryByText(container, "Horário reservado")).toBeNull();
+});
+
+test("mostrar uma orientação qundo a aegenda está vazia", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservar = vi
+    .fn<(solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>>()
+    .mockResolvedValue([]);
+
+  montarTela(container, consultar, reservar, []);
+
+  expect(
+      getByText(container, "Nenhuma reserva na agenda.").textContent,
+    ).toBe("Nenhuma reserva na agenda.");
+
+    expect(queryAllByRole(container, "listitem")).toHaveLength(0);
+
+    expect(consultar).not.toHaveBeenCalled();
+    expect(reservar).not.toHaveBeenCalled();
+})
+
+test("oculta a mensagem de agenda vazia após a primeira reserva aceita", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue([
+      { inicio: 600, fim: 660 },
+    ]);
+
+  montarTela(container, consultar, reservar, []);
+
+  const mensagem = getByText(
+    container,
+    "Nenhuma reserva na agenda.",
+  );
+
+  expect(mensagem.hidden).toBe(false);
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário reservado");
+
+  expect(mensagem.hidden).toBe(true);
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual(["10:00–11:00"]);
+
+  expect(reservar).toHaveBeenCalledTimes(1);
+  expect(reservar).toHaveBeenCalledWith({
+    inicio: 600,
+    fim: 660,
+  });
 });

@@ -88,6 +88,10 @@ o script estiver em execução.
 - A seção “Agenda” exibe os intervalos no formato `HH:mm–HH:mm`, começando
   com a reserva inicial `09:00–10:00`. Os campos “Início” e “Fim” são
   editáveis e começam com 10h e 11h.
+- Quando a agenda está vazia, a tela mostra “Nenhuma reserva na agenda.”.
+  A mensagem fica oculta quando há reservas, inclusive após a primeira
+  reserva aceita. A aplicação continua iniciando com a reserva de 09h–10h;
+  o estado vazio é coberto pelos testes da interface.
 - Ao clicar, a tela converte os horários de `HH:mm` para minutos. As regras
   de validade dos intervalos e de conflito permanecem no domínio Python.
 - Campos vazios exibem uma orientação e impedem a operação. Após corrigir
@@ -122,18 +126,19 @@ na tela. `main.ts` fornece a agenda inicial a `montarTela`, que formata os
 intervalos para leitura. O domínio Python continua responsável pelas decisões
 de disponibilidade e agendamento.
 
-A estrutura TypeScript reúne **17 testes do cliente HTTP**, **27 testes da
-interface** e **5 testes de integração real** — **49 casos** ao todo. A integração
+A estrutura TypeScript reúne **17 testes do cliente HTTP**, **29 testes da
+interface** e **5 testes de integração real** — **51 casos** ao todo. A integração
 cobre consulta disponível, validação da consulta, reserva consecutiva, conflito
 e validação da reserva. Os testes da interface usam funções simuladas para
 verificar mensagens, conversão dos horários, campos vazios, recuperação após
 correção, estados dos botões durante a espera e bloqueio de operações
 simultâneas nas duas direções na mesma tela. Também cobrem a exibição da agenda
 inicial, sua atualização após uma reserva aceita e a preservação da lista
-quando há conflito.
+quando há conflito. O estado de agenda vazia e a ocultação da orientação após
+a primeira reserva aceita também são verificados por testes automatizados.
 
 Na verificação final local de 9 de novembro de 2026, passaram a checagem de
-tipos TypeScript e todos os **49 testes TypeScript**, incluindo a integração
+tipos TypeScript e todos os **51 testes TypeScript**, incluindo a integração
 com a API real. Também passaram Ruff lint, Ruff format, BasedPyright,
 os **52 testes Python** e `git diff --check`. Esses resultados locais não
 confirmam publicação nem aprovação do CI para as alterações atuais.

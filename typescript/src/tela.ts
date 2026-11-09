@@ -20,8 +20,13 @@ export function montarTela(
 
   const listaReservas = document.createElement("ul");
 
+  const mensagemAgendaVazia = document.createElement("p");
+  mensagemAgendaVazia.textContent = "Nenhuma reserva na agenda.";
+
   function atualizarAgenda(reservas: IntervaloEntrada[]): void {
     listaReservas.replaceChildren();
+
+    mensagemAgendaVazia.hidden = reservas.length > 0;
 
     reservas.forEach((reserva) => {
       const item = document.createElement("li");
@@ -35,7 +40,7 @@ export function montarTela(
 
   atualizarAgenda(reservasIniciais);
 
-  container.append(tituloAgenda, listaReservas);
+  container.append(tituloAgenda, mensagemAgendaVazia, listaReservas);
 
   const rotuloInicio = document.createElement("label");
   rotuloInicio.htmlFor = "inicio";
