@@ -1,9 +1,11 @@
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from api import app
+from api import app, configurar_interface
 
 
 @pytest.fixture
@@ -143,3 +145,42 @@ def test_rejeita_criacao_com_reserva_existente_de_duracao_zero(
 
     assert resposta.status_code == 422
     assert resposta.json() == {"detail": "Intervalo inválido."}
+
+
+def test_entrega_html_da_interface_na_raiz(tmp_path: Path) -> None:
+    html = "<!doctype html><html><body>SlotGuard de teste</body></html>"
+
+    arquivo_index = tmp_path / "index.html"
+    _ = arquivo_index.write_text(html, encoding="utf-8")
+
+    aplicacao = FastAPI()
+    configurar_interface(aplicacao, tmp_path)
+
+    with TestClient(aplicacao) as cliente_http:
+        resposta = cliente_http.get("/")
+
+    assert resposta.status_code == 200
+    assert resposta.headers["content-type"].startswith("text/html")
+    assert resposta.text == html
+
+
+def test_entrega_javascript_da_interface(tmp_path: Path) -> None:
+    diretorio_assets = tmp_path / "assets"
+    diretorio_assets.mkdir()
+
+    javascript = 'console.log("SlotGuard de teste");'
+    arquivo_javascript = diretorio_assets / "index-teste.js"
+    _ = arquivo_javascript.write_text(javascript, encoding="utf-8")
+
+    aplicacao = FastAPI()
+    configurar_interface(aplicacao, tmp_path)
+
+    with TestClient(aplicacao) as cliente_http:
+        resposta = cliente_http.get("/assets/index-teste.js")
+
+    assert resposta.status_code == 200
+    assert resposta.text == javascript
+    assert resposta.headers["content-type"].split(";")[0] in {
+        "text/javascript",
+        "application/javascript",
+    }

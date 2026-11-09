@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, StrictInt
 
 from exceptions import HorarioIndisponivelError
@@ -6,6 +10,27 @@ from models import Agenda, Intervalo
 from slotguard import agendar, esta_disponivel
 
 app = FastAPI()
+
+
+def configurar_interface(
+    aplicacao: FastAPI,
+    diretorio: Path,
+) -> None:
+    @aplicacao.get("/", response_class=FileResponse)
+    def entregar_interface() -> FileResponse:
+        return FileResponse(
+            diretorio / "index.html",
+            media_type="text/html",
+        )
+
+    diretorio_assets = diretorio / "assets"
+
+    if diretorio_assets.is_dir():
+        aplicacao.mount(
+            "/assets",
+            StaticFiles(directory=diretorio_assets),
+            name="assets",
+        )
 
 
 class IntervaloEntrada(BaseModel):

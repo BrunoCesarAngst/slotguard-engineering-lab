@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "test:integration": "vitest run src/api.integration.test.ts",
     "test:ui": "vitest run src/tela.test.ts",
-    "dev": "vite"
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build"
   },
   "keywords": [],
   "author": "",

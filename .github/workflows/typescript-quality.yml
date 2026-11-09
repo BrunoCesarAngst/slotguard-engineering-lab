@@ -80,3 +80,7 @@ jobs:
           echo "A API não ficou pronta dentro do limite."
           cat "$RUNNER_TEMP/slotguard-api.log"
           exit 1
+
+      - name: Build publication image
+        working-directory: .
+        run: docker build -t slotguard:ci .
