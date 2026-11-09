@@ -22,7 +22,8 @@ O SlotGuard separa a **integridade dos dados** das **regras de negócio** e test
 - Expõe uma consulta HTTP de disponibilidade por uma camada FastAPI que
   reutiliza o domínio existente, consumida pela interface TypeScript.
 - Oferece `POST /reservas` para agendar um intervalo livre e devolver a agenda
-  atualizada. Essa operação ainda não está conectada à interface.
+  atualizada. A interface TypeScript utiliza essa operação e mantém a agenda
+  retornada na memória da página.
 
 ## Modelo de domínio
 
@@ -221,13 +222,15 @@ em banco de dados. Para uma operação posterior, o cliente deve enviar a
 agenda devolvida pela operação anterior. Permanecem as limitações de
 concorrência descritas abaixo.
 
-**A interface TypeScript ainda oferece apenas consulta de disponibilidade.**
-Ela não chama `/reservas`, não apresenta uma ação de reservar e não mantém
-uma agenda atualizada por essa operação. O encaminhamento do Vite atual
-cobre `/disponibilidade`; a integração de reservas pelo navegador ainda será
-implementada. Para experimentar a nova rota, use a documentação da API em
-`http://127.0.0.1:8000/docs`, reiniciando o servidor se o código Python tiver
-sido alterado desde sua inicialização.
+A interface TypeScript oferece consulta e reserva com horários editáveis.
+Após uma reserva aceita, mantém a agenda retornada na memória da página e a
+envia nas próximas operações. Recarregar a página restaura a reserva inicial
+de 09h–10h; não há sincronização entre abas ou usuários. A tela apresenta a
+confirmação de sucesso e as mensagens de conflito (`409`) e validação (`422`).
+O Vite encaminha `/disponibilidade` e `/reservas` para a API no desenvolvimento.
+Para experimentar as rotas diretamente, use a documentação em
+`http://127.0.0.1:8000/docs`. Reinicie o servidor após alterações Python,
+pois ele não recarrega o código automaticamente.
 
 ## Demonstração no terminal
 
@@ -260,15 +263,18 @@ Ao final, a agenda contém duas reservas, uma tentativa foi bloqueada e a agenda
 - Não existem cadastro de clientes, profissionais, serviços, duração comercial ou horários de funcionamento.
 - O núcleo é independente de HTTP e de interface gráfica. O projeto possui
   uma API FastAPI de consulta e criação de reservas e uma interface TypeScript
-  que ainda oferece apenas consulta. Autenticação e persistência permanecem
+  de consulta e reserva. Autenticação e persistência permanecem
   pendentes.
-- A agenda está em memória e a operação é uma transformação imutável de valores.
+- O domínio transforma agendas de forma imutável. A interface mantém a agenda
+  somente na memória da página; recarregar restaura o estado inicial. O servidor
+  não mantém uma agenda compartilhada entre usuários.
 - **Não há garantia de exclusividade em operações simultâneas.** Duas chamadas baseadas na mesma agenda antiga podem aceitar o mesmo horário. A proteção real contra concorrência exigirá coordenação do estado e garantias transacionais na persistência.
 
 ## Próximas fases do Engineering Dojo
 
-- **TypeScript (em andamento):** interface de consulta conectada à API Python,
-  com horários editáveis, validação de preenchimento e testes de interação.
+- **TypeScript (em andamento):** interface de consulta e reserva conectada à
+  API Python, com agenda em memória, horários editáveis, validação de
+  preenchimento e testes de interação e integração.
 - **Java:** modelar o domínio e reproduzir condições de corrida, explorando concorrência e seus limites.
 - **Quarkus:** expor uma API REST, adicionar persistência e testar a prevenção de reservas duplicadas sob concorrência com garantias apropriadas no banco.
 

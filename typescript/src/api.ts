@@ -8,7 +8,37 @@ interface ConsultaDisponibilidadeEntrada {
   solicitacao: IntervaloEntrada;
 }
 
-export class ErroValidacaoApi extends Error {}
+export class ErroValidacaoApi extends Error { }
+
+export class ErroConflitoApi extends Error { }
+
+function ehIntervaloEntrada(valor: unknown): valor is IntervaloEntrada {
+  return (
+    typeof valor === "object" &&
+    valor !== null &&
+    "inicio" in valor &&
+    typeof valor.inicio === "number" &&
+    "fim" in valor &&
+    typeof valor.fim === "number"
+  );
+}
+
+async function lerDetalheTextual(
+  resposta: Response,
+): Promise<string | undefined> {
+  const erro: unknown = await resposta.json();
+
+  if (
+    typeof erro === "object" &&
+    erro !== null &&
+    "detail" in erro &&
+    typeof erro.detail === "string"
+  ) {
+    return erro.detail;
+  }
+
+  return undefined;
+}
 
 export async function consultarDisponibilidade(
   consulta: ConsultaDisponibilidadeEntrada,
@@ -24,15 +54,10 @@ export async function consultarDisponibilidade(
 
   if (!resposta.ok) {
     if (resposta.status === 422) {
-      const erro: unknown = await resposta.json()
+      const detalhe = await lerDetalheTextual(resposta);
 
-      if (
-        typeof erro === "object" &&
-        erro !== null &&
-        "detail" in erro &&
-        typeof erro.detail === "string"
-      ) {
-        throw new ErroValidacaoApi(erro.detail);
+      if (detalhe !== undefined) {
+        throw new ErroValidacaoApi(detalhe);
       }
     }
 
@@ -54,4 +79,55 @@ export async function consultarDisponibilidade(
   }
 
   return dados.disponivel;
+}
+
+export async function reservarHorario(
+  entrada: ConsultaDisponibilidadeEntrada,
+  urlBase: string = "",
+): Promise<IntervaloEntrada[]> {
+  const resposta = await fetch(`${urlBase}/reservas`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(entrada),
+  })
+
+  if (resposta.status === 409) {
+    const detalhe = await lerDetalheTextual(resposta);
+
+    throw new ErroConflitoApi(detalhe ?? "Horário indisponível.");
+  }
+
+  if (resposta.status === 422) {
+    const detalhe = await lerDetalheTextual(resposta);
+
+    if (detalhe !== undefined) {
+      throw new ErroValidacaoApi(detalhe);
+    }
+
+    throw new Error(
+      `Erro ao reservar horário: HTTP ${resposta.status}`,
+    );
+  }
+
+  if (!resposta.ok) {
+    throw new Error(
+      `Erro ao reservar horário: HTTP ${resposta.status}`
+    )
+  }
+
+  const dados: unknown = await resposta.json();
+
+  if (
+    typeof dados !== "object" ||
+    dados === null ||
+    !("reservas" in dados) ||
+    !Array.isArray(dados.reservas) ||
+    !dados.reservas.every(ehIntervaloEntrada)
+  ) {
+    throw new Error("Resposta inválida da API");
+  }
+
+  return dados.reservas;
 }

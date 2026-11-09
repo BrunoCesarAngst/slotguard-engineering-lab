@@ -34,9 +34,13 @@ A demonstração animada pode ser executada com `python demo.py` na pasta
 
 ## Limitações atuais
 
-O núcleo trabalha com intervalos dentro de um único dia
-e ainda não inclui persistência nem controle transacional
-para solicitações simultâneas.
+O núcleo trabalha com intervalos dentro de um único dia. A agenda da interface
+fica apenas na memória da página: recarregar restaura a reserva inicial de
+09h–10h. Não há agenda compartilhada entre abas ou usuários, persistência,
+autenticação nem controle transacional para solicitações simultâneas.
+Duas chamadas baseadas na mesma agenda antiga podem aceitar o mesmo horário;
+o bloqueio dos dois botões na mesma tela não oferece proteção contra essa
+concorrência.
 
 ## Engenharia
 
@@ -79,76 +83,76 @@ o script estiver em execução.
 
 - Interface: http://127.0.0.1:5173/
 - Documentação interativa da API: http://127.0.0.1:8000/docs
-- A API oferece `POST /disponibilidade` para consulta e `POST /reservas`
-  para devolver uma agenda com uma nova reserva aceita. A interface ainda
-  oferece **apenas consulta**; não há botão de reservar nem atualização da
-  agenda pela tela nesta etapa.
-- `POST /reservas` responde `201` com a agenda atualizada, `409` quando há
-  conflito e `422` para intervalos inválidos. Cada requisição fornece sua
-  própria agenda; o servidor não persiste as reservas.
-- Reserva fixa: 09h–10h. Os campos “Início” e “Fim” da solicitação são
-  editáveis, com valores iniciais de 10h e 11h.
-- Ao clicar, a tela converte os horários de `HH:mm` para minutos e envia
-  a solicitação à API. As regras de validade dos intervalos e de conflito
-  permanecem no domínio Python.
-- Campos vazios exibem uma orientação de preenchimento e impedem a consulta.
-  Após corrigir o campo, é possível consultar novamente.
-- O botão consulta a API real, mostra “Consultando…” e fica desabilitado
-  durante a espera. Depois apresenta disponibilidade ou uma mensagem de erro.
-- Quando a API responde com `422` e um `detail` textual, o cliente lança
-  `ErroValidacaoApi` e a tela apresenta essa mensagem, como “Intervalo inválido.”.
-  Outros erros mantêm a mensagem “Não foi possível consultar a disponibilidade”.
-  Após corrigir os horários, é possível consultar novamente.
-- O Vite encaminha `/disponibilidade` para a API local. Essa configuração
-  vale para desenvolvimento; não constitui configuração de publicação.
+- A interface oferece os botões “Consultar disponibilidade” e “Reservar horário”,
+  conectados a `POST /disponibilidade` e `POST /reservas`, respectivamente.
+- A agenda inicial contém uma reserva de 09h–10h. Os campos “Início” e “Fim”
+  são editáveis e começam com 10h e 11h.
+- Ao clicar, a tela converte os horários de `HH:mm` para minutos. As regras
+  de validade dos intervalos e de conflito permanecem no domínio Python.
+- Campos vazios exibem uma orientação e impedem a operação. Após corrigir
+  o campo, é possível tentar novamente.
+- Durante cada operação, os dois botões ficam desabilitados e a tela mostra
+  “Consultando…” ou “Reservando…”. Isso impede iniciar uma consulta durante
+  uma reserva ou uma reserva durante uma consulta na mesma tela. Ambos os
+  botões são reabilitados ao terminar, inclusive em caso de erro.
+- A consulta mostra “Horário disponível” ou “Horário indisponível”.
+- A reserva aceita mostra “Horário reservado”. A agenda retornada substitui
+  a agenda local e passa a ser enviada nas próximas consultas e reservas.
+- `POST /reservas` responde `201` com a agenda atualizada, `409` para conflito
+  e `422` para entrada inválida. O cliente reconhece `ErroConflitoApi` e
+  `ErroValidacaoApi`; a tela apresenta mensagens como “Horário indisponível.”
+  e “Intervalo inválido.”.
+- Falhas genéricas exibem “Não foi possível consultar a disponibilidade” ou
+  “Não foi possível reservar o horário”, conforme a operação.
+- Cada requisição fornece sua própria agenda. O servidor não armazena reservas;
+  a interface mantém a agenda somente na memória da página, sem recuperá-la
+  após recarregar e sem sincronizá-la entre abas ou usuários.
+- O Vite encaminha `/disponibilidade` e `/reservas` para a API local.
+  Essa configuração vale para desenvolvimento; não constitui configuração
+  de publicação.
 
-### Ponto de retomada — 8 de novembro de 2026
+### Ponto de retomada — 9 de novembro de 2026
 
-Os campos editáveis estão implementados e conectados à API real. A etapa
-inclui rótulos associados aos campos, valores iniciais, leitura no clique,
-conversão para minutos, bloqueio de campos vazios e recuperação após correção.
-A mensagem de validação e sua recuperação foram publicadas no commit
-`0a3e004`, com os workflows Python Quality e TypeScript Quality aprovados.
+A interface consulta e cria reservas pela API Python. A reserva aceita atualiza
+a agenda mantida em `main.ts`, usada nas operações seguintes. O domínio Python
+continua responsável pelas decisões de disponibilidade e agendamento.
 
-A etapa atual acrescenta `POST /reservas`, reutilizando `agendar()` para
-devolver uma nova agenda ou rejeitar conflitos. `converter_entrada()`
-centraliza a construção de `Agenda` e `Intervalo` para as duas rotas.
-Os testes HTTP usam a fixture `cliente` para gerenciar o `TestClient` e
-`montar_entrada()` para preparar o JSON; as respostas esperadas permanecem
-explícitas em cada teste.
+A estrutura TypeScript reúne **17 testes do cliente HTTP**, **24 testes da
+interface** e **5 testes de integração real** — **46 casos** ao todo. A integração
+cobre consulta disponível, validação da consulta, reserva consecutiva, conflito
+e validação da reserva. Os testes da interface usam funções simuladas para
+verificar mensagens, conversão dos horários, campos vazios, recuperação após
+correção, estados dos botões durante a espera e bloqueio de operações
+simultâneas nas duas direções na mesma tela.
 
-Verificações locais desta etapa: Ruff lint e format aprovados, BasedPyright
-sem diagnósticos e **52 testes Python aprovados**, incluindo **8 testes da
-API**. Os **2 testes de integração TypeScript existentes** também passaram;
-eles verificam sucesso e validação em `/disponibilidade`, não a criação de
-reservas. O novo endpoint é exercitado pelos testes Python com `TestClient`.
+Na verificação final local de 9 de novembro de 2026, passaram a checagem de
+tipos TypeScript e todos os **46 testes TypeScript**, incluindo a integração
+com a API real. Também passaram Ruff lint, Ruff format, BasedPyright,
+os **52 testes Python** e `git diff --check`. Esses resultados locais não
+confirmam publicação nem aprovação do CI para as alterações atuais.
 
-A suíte TypeScript permanece com **5 testes do cliente HTTP**, **12 testes
-da tela** e **2 testes de integração real** — **19 testes** ao todo, aprovados
-no CI anterior. A interface ainda oferece **apenas consulta**. A conexão
-de uma ação de reservar ao novo endpoint será uma etapa posterior, com TDD.
+A pendência identificada na revisão foi corrigida: consulta e reserva agora
+bloqueiam os dois botões até a conclusão da operação. Os testes verificam que
+clicar no outro botão durante a espera não inicia uma segunda operação e que
+ambos são reabilitados ao terminar. Isso evita a sobreposição de respostas de
+consulta e reserva iniciadas pelos botões na mesma tela; a limitação de
+concorrência entre abas ou usuários permanece.
 
-Em 8 de novembro, foram confirmados no navegador os cenários abaixo,
-com a reserva existente fixa de 09h–10h:
+O autor também confirmou manualmente no navegador:
 
-| Cenário | Resultado observado |
+| Sequência na mesma página | Resultado observado |
 |---|---|
-| Solicitação 10h–11h | Horário disponível |
-| Solicitação 09h30–10h30 | Horário indisponível |
-| Início vazio e fim preenchido | Preencha o horário de início. |
-| Fim vazio e início preenchido | Preencha o horário de fim. |
-| Corrigir o campo vazio e consultar | Consulta realizada e mensagem anterior substituída pelo resultado |
-| Solicitação 10h–10h | Intervalo inválido. Botão reabilitado após a resposta |
-| Corrigir o fim para 11h e consultar novamente | Horário disponível, mensagem de validação removida e botão habilitado |
+| Reservar 10h–11h | Horário reservado |
+| Consultar novamente 10h–11h | Horário indisponível |
+| Tentar reservar novamente 10h–11h | Horário indisponível. |
 
-Essa conferência no navegador é uma verificação manual da consulta,
-separada dos testes automatizados. Os campos editáveis foram publicados
-no commit `e323739`, e a apresentação da validação em `0a3e004`.
-`POST /reservas` e as refatorações desta etapa foram verificados localmente
-e ainda aguardam commit, publicação e confirmação dos dois workflows.
+Essa conferência manual verifica o uso da agenda atualizada nas operações
+seguintes e complementa os testes automatizados. A agenda não é persistente:
+ao recarregar a página, volta à reserva inicial de 09h–10h.
 
-Continuar com TDD, mudanças pequenas e código escrito pelo autor do projeto.
-Não substituir a lógica Python por uma nova implementação TypeScript.
+Continuar com TDD e mudanças pequenas. Antes de preparar um commit, executar
+as verificações abaixo e revisar o diff. Commit, publicação e acompanhamento
+dos workflows dependem de solicitação do autor.
 
 ### Executar verificações
 

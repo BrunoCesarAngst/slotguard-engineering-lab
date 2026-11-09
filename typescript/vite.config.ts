@@ -7,6 +7,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/disponibilidade": "http://127.0.0.1:8000",
+      "/reservas": "http://127.0.0.1:8000",
     },
   },
 });

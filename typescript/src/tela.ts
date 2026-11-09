@@ -1,5 +1,5 @@
 import type { IntervaloEntrada } from "./api";
-import { ErroValidacaoApi } from "./api";
+import { ErroConflitoApi, ErroValidacaoApi } from "./api";
 
 function converterParaMinutos(horario: string): number {
   const [horas, minutos] = horario.split(":");
@@ -10,6 +10,7 @@ function converterParaMinutos(horario: string): number {
 export function montarTela(
   container: HTMLElement,
   consultar: (solicitacao: IntervaloEntrada) => Promise<boolean>,
+  reservar?: (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>,
 ): void {
   const rotuloInicio = document.createElement("label");
   rotuloInicio.htmlFor = "inicio";
@@ -33,6 +34,8 @@ export function montarTela(
   botao.type = "button"
   botao.textContent = "Consultar disponibilidade"
 
+  const botoes = [botao];
+
   const resultado = document.createElement("p");
   botao.addEventListener("click", async () => {
 
@@ -46,7 +49,9 @@ export function montarTela(
       return;
     }
 
-    botao.disabled = true;
+    botoes.forEach((botao) => {
+      botao.disabled = true;
+    });
     resultado.textContent = "Consultando…"
 
     try {
@@ -66,7 +71,9 @@ export function montarTela(
         resultado.textContent = "Não foi possível consultar a disponibilidade";
       }
     } finally {
-      botao.disabled = false;
+      botoes.forEach((botao) => {
+        botao.disabled = false;
+      });
     }
   });
 
@@ -78,4 +85,52 @@ export function montarTela(
     botao,
     resultado,
   );
+
+  if (reservar !== undefined) {
+    const botaoReservar = document.createElement("button");
+    botaoReservar.type = "button";
+    botaoReservar.textContent = "Reservar horário";
+    botoes.push(botaoReservar);
+
+    botaoReservar.addEventListener("click", async () => {
+      if (inicio.value === "") {
+        resultado.textContent = "Preencha o horário de início.";
+        return;
+      }
+
+      if (fim.value === "") {
+        resultado.textContent = "Preencha o horário de fim.";
+        return;
+      }
+
+      botoes.forEach((botao) => {
+        botao.disabled = true;
+      });
+      resultado.textContent = "Reservando…";
+
+      try {
+        await reservar({
+          inicio: converterParaMinutos(inicio.value),
+          fim: converterParaMinutos(fim.value),
+        });
+
+        resultado.textContent = "Horário reservado";
+      } catch (erro: unknown) {
+        if (
+          erro instanceof ErroConflitoApi  ||
+          erro instanceof ErroValidacaoApi
+        ) {
+          resultado.textContent = erro.message;
+        } else {
+          resultado.textContent = "Não foi possível reservar o horário";
+        }
+      } finally {
+        botoes.forEach((botao) => {
+          botao.disabled = false;
+        });
+      }
+    });
+
+    resultado.before(botaoReservar);
+  }
 }
