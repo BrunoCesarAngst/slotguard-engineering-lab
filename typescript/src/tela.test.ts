@@ -1185,3 +1185,151 @@ test("oculta a mensagem de agenda vazia após a primeira reserva aceita", async 
     fim: 660,
   });
 });
+
+test("mostra as reservas em ordem de início", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservasIniciais = [
+    { inicio: 600, fim: 660 },
+    { inicio: 540, fim: 600 },
+  ];
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue(reservasIniciais);
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual([
+    "09:00–10:00",
+    "10:00–11:00",
+  ]);
+
+  expect(consultar).not.toHaveBeenCalled();
+  expect(reservar).not.toHaveBeenCalled();
+});
+
+test("não modifica a agenda original ao ordenar a exibição", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservasIniciais = [
+    { inicio: 600, fim: 660 },
+    { inicio: 540, fim: 600 },
+  ];
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue(reservasIniciais);
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual([
+    "09:00–10:00",
+    "10:00–11:00",
+  ]);
+
+  expect(reservasIniciais).toEqual([
+    { inicio: 600, fim: 660 },
+    { inicio: 540, fim: 600 },
+  ]);
+});
+
+test("mantém a agenda exibida em ordem após reservar um horário anterior", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservasIniciais = [
+    { inicio: 600, fim: 660 },
+  ];
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue([
+      { inicio: 600, fim: 660 },
+      { inicio: 540, fim: 600 },
+    ]);
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual(["10:00–11:00"]);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  inicio.value = "09:00";
+  fim.value = "10:00";
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário reservado");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual([
+    "09:00–10:00",
+    "10:00–11:00",
+  ]);
+
+  expect(reservar).toHaveBeenCalledTimes(1);
+  expect(reservar).toHaveBeenCalledWith({
+    inicio: 540,
+    fim: 600,
+  });
+});

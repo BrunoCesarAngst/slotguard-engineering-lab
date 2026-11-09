@@ -28,7 +28,11 @@ export function montarTela(
 
     mensagemAgendaVazia.hidden = reservas.length > 0;
 
-    reservas.forEach((reserva) => {
+    const reservasOrdenadas = [...reservas].sort(
+      (primeira, segunda) => primeira.inicio - segunda.inicio,
+    );
+
+    reservasOrdenadas.forEach((reserva) => {
       const item = document.createElement("li");
 
       item.textContent =
