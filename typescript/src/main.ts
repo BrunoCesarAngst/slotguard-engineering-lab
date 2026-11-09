@@ -29,4 +29,5 @@ montarTela(
 
     return agendaAtualizada;
   },
+  reservas,
 );

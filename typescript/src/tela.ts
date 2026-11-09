@@ -10,8 +10,33 @@ function converterParaMinutos(horario: string): number {
 export function montarTela(
   container: HTMLElement,
   consultar: (solicitacao: IntervaloEntrada) => Promise<boolean>,
-  reservar?: (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>,
+  reservar?: (
+    solicitacao: IntervaloEntrada
+  ) => Promise<IntervaloEntrada[]>,
+  reservasIniciais: IntervaloEntrada[] = [],
 ): void {
+  const tituloAgenda = document.createElement("h2");
+  tituloAgenda.textContent = "Agenda";
+
+  const listaReservas = document.createElement("ul");
+
+  function atualizarAgenda(reservas: IntervaloEntrada[]): void {
+    listaReservas.replaceChildren();
+
+    reservas.forEach((reserva) => {
+      const item = document.createElement("li");
+
+      item.textContent =
+        `${formatarHorario(reserva.inicio)}–${formatarHorario(reserva.fim)}`;
+
+      listaReservas.append(item);
+    });
+  }
+
+  atualizarAgenda(reservasIniciais);
+
+  container.append(tituloAgenda, listaReservas);
+
   const rotuloInicio = document.createElement("label");
   rotuloInicio.htmlFor = "inicio";
   rotuloInicio.textContent = "Início";
@@ -109,10 +134,12 @@ export function montarTela(
       resultado.textContent = "Reservando…";
 
       try {
-        await reservar({
+        const agendaAtualizada = await reservar({
           inicio: converterParaMinutos(inicio.value),
           fim: converterParaMinutos(fim.value),
         });
+
+        atualizarAgenda(agendaAtualizada);
 
         resultado.textContent = "Horário reservado";
       } catch (erro: unknown) {
@@ -133,4 +160,11 @@ export function montarTela(
 
     resultado.before(botaoReservar);
   }
+}
+
+function formatarHorario(minutos: number): string {
+  const horas = Math.floor(minutos / 60);
+  const minutosRestantes = minutos % 60;
+
+  return `${String(horas).padStart(2, "0")}:${String(minutosRestantes).padStart(2, "0")}`;
 }

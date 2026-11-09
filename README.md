@@ -85,8 +85,9 @@ o script estiver em execução.
 - Documentação interativa da API: http://127.0.0.1:8000/docs
 - A interface oferece os botões “Consultar disponibilidade” e “Reservar horário”,
   conectados a `POST /disponibilidade` e `POST /reservas`, respectivamente.
-- A agenda inicial contém uma reserva de 09h–10h. Os campos “Início” e “Fim”
-  são editáveis e começam com 10h e 11h.
+- A seção “Agenda” exibe os intervalos no formato `HH:mm–HH:mm`, começando
+  com a reserva inicial `09:00–10:00`. Os campos “Início” e “Fim” são
+  editáveis e começam com 10h e 11h.
 - Ao clicar, a tela converte os horários de `HH:mm` para minutos. As regras
   de validade dos intervalos e de conflito permanecem no domínio Python.
 - Campos vazios exibem uma orientação e impedem a operação. Após corrigir
@@ -97,7 +98,9 @@ o script estiver em execução.
   botões são reabilitados ao terminar, inclusive em caso de erro.
 - A consulta mostra “Horário disponível” ou “Horário indisponível”.
 - A reserva aceita mostra “Horário reservado”. A agenda retornada substitui
-  a agenda local e passa a ser enviada nas próximas consultas e reservas.
+  a agenda local, atualiza a lista exibida sem duplicar itens e passa a ser
+  enviada nas próximas consultas e reservas. Uma reserva rejeitada mantém
+  os itens anteriores na tela.
 - `POST /reservas` responde `201` com a agenda atualizada, `409` para conflito
   e `422` para entrada inválida. O cliente reconhece `ErroConflitoApi` e
   `ErroValidacaoApi`; a tela apresenta mensagens como “Horário indisponível.”
@@ -114,19 +117,23 @@ o script estiver em execução.
 ### Ponto de retomada — 9 de novembro de 2026
 
 A interface consulta e cria reservas pela API Python. A reserva aceita atualiza
-a agenda mantida em `main.ts`, usada nas operações seguintes. O domínio Python
-continua responsável pelas decisões de disponibilidade e agendamento.
+a agenda mantida em `main.ts`, usada nas operações seguintes, e a lista exibida
+na tela. `main.ts` fornece a agenda inicial a `montarTela`, que formata os
+intervalos para leitura. O domínio Python continua responsável pelas decisões
+de disponibilidade e agendamento.
 
-A estrutura TypeScript reúne **17 testes do cliente HTTP**, **24 testes da
-interface** e **5 testes de integração real** — **46 casos** ao todo. A integração
+A estrutura TypeScript reúne **17 testes do cliente HTTP**, **27 testes da
+interface** e **5 testes de integração real** — **49 casos** ao todo. A integração
 cobre consulta disponível, validação da consulta, reserva consecutiva, conflito
 e validação da reserva. Os testes da interface usam funções simuladas para
 verificar mensagens, conversão dos horários, campos vazios, recuperação após
 correção, estados dos botões durante a espera e bloqueio de operações
-simultâneas nas duas direções na mesma tela.
+simultâneas nas duas direções na mesma tela. Também cobrem a exibição da agenda
+inicial, sua atualização após uma reserva aceita e a preservação da lista
+quando há conflito.
 
 Na verificação final local de 9 de novembro de 2026, passaram a checagem de
-tipos TypeScript e todos os **46 testes TypeScript**, incluindo a integração
+tipos TypeScript e todos os **49 testes TypeScript**, incluindo a integração
 com a API real. Também passaram Ruff lint, Ruff format, BasedPyright,
 os **52 testes Python** e `git diff --check`. Esses resultados locais não
 confirmam publicação nem aprovação do CI para as alterações atuais.
@@ -142,9 +149,11 @@ O autor também confirmou manualmente no navegador:
 
 | Sequência na mesma página | Resultado observado |
 |---|---|
-| Reservar 10h–11h | Horário reservado |
+| Abrir a interface | Agenda com `09:00–10:00` |
+| Reservar 10h–11h | Horário reservado; lista com `09:00–10:00` e `10:00–11:00`, sem duplicação |
 | Consultar novamente 10h–11h | Horário indisponível |
-| Tentar reservar novamente 10h–11h | Horário indisponível. |
+| Tentar reservar novamente 10h–11h | Mensagem “Horário indisponível.”; os dois itens permanecem na lista |
+| Recarregar a página | Agenda restaurada com somente `09:00–10:00` |
 
 Essa conferência manual verifica o uso da agenda atualizada nas operações
 seguintes e complementa os testes automatizados. A agenda não é persistente:

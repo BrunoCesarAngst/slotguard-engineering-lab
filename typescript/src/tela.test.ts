@@ -6,6 +6,7 @@ import {
   getByRole,
   getByText,
   queryByText,
+  within,
 } from "@testing-library/dom";
 import { afterEach, expect, test, vi } from "vitest";
 
@@ -953,4 +954,160 @@ test("impede consultar enquanto uma reserva está pendente", async () => {
 
   expect(botaoConsultar.disabled).toBe(false);
   expect(botaoReservar.disabled).toBe(false);
+});
+
+test("mostra as reservas da agenda inicial", () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservasIniciais = [{ inicio: 540, fim: 600 }];
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue(reservasIniciais);
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  expect(
+    getByRole(container, "heading", { name: "Agenda" }).textContent,
+  ).toBe("Agenda");
+
+  expect(
+    getByText(container, "09:00–10:00").textContent,
+  ).toBe("09:00–10:00");
+
+  expect(consultar).not.toHaveBeenCalled();
+  expect(reservar).not.toHaveBeenCalled();
+});
+
+test("atualiza a agenda exibida após uma reserva aceita", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservasIniciais = [
+    { inicio: 540, fim: 600 },
+  ];
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockResolvedValue([
+      { inicio: 540, fim: 600 },
+      { inicio: 600, fim: 660 },
+    ]);
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual(["09:00–10:00"]);
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário reservado");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual([
+    "09:00–10:00",
+    "10:00–11:00",
+  ]);
+
+  expect(reservar).toHaveBeenCalledTimes(1);
+  expect(reservar).toHaveBeenCalledWith({
+    inicio: 600,
+    fim: 660,
+  });
+});
+
+test("mantém a agenda exibida quando a reserva conflita", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+
+  const consultar = vi
+    .fn<() => Promise<boolean>>()
+    .mockResolvedValue(true);
+
+  const reservar = vi
+    .fn<
+      (solicitacao: IntervaloEntrada) => Promise<IntervaloEntrada[]>
+    >()
+    .mockRejectedValue(
+      new ErroConflitoApi("Horário indisponível."),
+    );
+
+  const reservasIniciais = [
+    { inicio: 540, fim: 600 },
+  ];
+
+  montarTela(
+    container,
+    consultar,
+    reservar,
+    reservasIniciais,
+  );
+
+  const lista = getByRole(container, "list");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual(["09:00–10:00"]);
+
+  const inicio = getByLabelText<HTMLInputElement>(
+    container,
+    "Início",
+  );
+  const fim = getByLabelText<HTMLInputElement>(
+    container,
+    "Fim",
+  );
+
+  inicio.value = "09:30";
+  fim.value = "10:30";
+
+  const botao = getByRole(container, "button", {
+    name: "Reservar horário",
+  });
+
+  botao.click();
+
+  await findByText(container, "Horário indisponível.");
+
+  expect(
+    within(lista).getAllByRole("listitem").map((item) => item.textContent),
+  ).toEqual(["09:00–10:00"]);
+
+  expect(reservar).toHaveBeenCalledTimes(1);
+  expect(reservar).toHaveBeenCalledWith({
+    inicio: 570,
+    fim: 630,
+  });
+  expect(queryByText(container, "Horário reservado")).toBeNull();
 });
