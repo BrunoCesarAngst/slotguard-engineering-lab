@@ -74,6 +74,13 @@ novos commits não disparam publicações automaticamente.
 
 ## Retomar o desenvolvimento
 
+Para abrir um novo chat, comece em [COMECE_AQUI.md](COMECE_AQUI.md) e no
+[estado atual](docs/ESTADO_ATUAL.md). A
+[continuidade completa](docs/CONTINUIDADE.md) reúne os detalhes, e o
+[histórico dos contextos 01, 02 e 03](docs/contextos/README.md) preserva as
+passagens anteriores, incluindo o segundo contexto recuperado. A entrada
+explica como disponibilizar esses arquivos no ChatGPT, Work ou Codex.
+
 Com as dependências já instaladas, na raiz do projeto:
 
 ```bash
