@@ -1,0 +1,12 @@
+node_modules
+.venv
+.cache
+models
+output
+src/completos.json
+public/full/*.wav
+__pycache__
+*.pyc
+.DS_Store
+.env
+.env.*

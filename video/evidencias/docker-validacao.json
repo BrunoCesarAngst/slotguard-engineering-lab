@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-09",
+  "environment": "Docker no OrbStack, macOS Apple Silicon",
+  "network": "none durante síntese e renderização",
+  "build_context": "video/; sem venv, node_modules, pesos ou saídas do host",
+  "models": "Dois arquivos obtidos da distribuição oficial e verificados contra modelos.json",
+  "python_dependencies": "requirements.lock instalado; pip check aprovado em Linux arm64 e amd64",
+  "full_generation": {
+    "platform": "linux/arm64",
+    "command": "bash video/gerar.sh --gerar",
+    "status": "passed",
+    "videos": [
+      {
+        "file": "slotguard-etapa-1-vertical.mp4",
+        "seconds": 87.936,
+        "bytes": 10156568,
+        "sha256": "d5b385bcaaac3d887a8fae51f1202ca4092bca3fd1ecb473c8f5ed51a3d35a45",
+        "audio_peak_db": -1.5,
+        "captions": 18,
+        "decode": "ok"
+      },
+      {
+        "file": "slotguard-etapa-1-horizontal.mp4",
+        "seconds": 87.936,
+        "bytes": 10412910,
+        "sha256": "be48e331bd089e125f4c8febf48bbff9d54163dc2fbf2c08454ab9bcc1d494d3",
+        "audio_peak_db": -1.5,
+        "captions": 18,
+        "decode": "ok"
+      },
+      {
+        "file": "slotguard-etapa-2-vertical.mp4",
+        "seconds": 106.88,
+        "bytes": 15822362,
+        "sha256": "ce776a47ca173f6c1cdecefe26c15da07854676665ea2a36cda216ab6e030800",
+        "audio_peak_db": -1.5,
+        "captions": 20,
+        "decode": "ok"
+      },
+      {
+        "file": "slotguard-etapa-2-horizontal.mp4",
+        "seconds": 106.88,
+        "bytes": 16669510,
+        "sha256": "3667bbfb4d08153991570aff2feb1e160d4402e49030fa8d3e617d3949f65e80",
+        "audio_peak_db": -1.5,
+        "captions": 20,
+        "decode": "ok"
+      }
+    ]
+  },
+  "smoke_tests": [
+    {
+      "platform": "linux/amd64",
+      "status": "passed",
+      "file": "slotguard-etapa-2-horizontal-smoke.mp4",
+      "seconds": 2.005,
+      "decode": "ok"
+    },
+    {
+      "platform": "linux/arm64",
+      "status": "passed",
+      "file": "slotguard-etapa-2-horizontal-smoke.mp4",
+      "seconds": 2.005,
+      "decode": "ok"
+    }
+  ],
+  "limits": [
+    "Linux amd64 executado sob emulação local; não em uma segunda máquina física.",
+    "Amostras de 2 segundos não substituem a validação integral dos quatro vídeos em ARM.",
+    "Inspeção visual de prévias realizada; escuta humana completa continua indicada antes de nova publicação.",
+    "CI de renderização ainda não configurado."
+  ]
+}

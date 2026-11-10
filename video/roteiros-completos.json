@@ -1,0 +1,37 @@
+[
+  {
+    "stage": 1,
+    "date": "05 NOV 2026",
+    "title": "Um horário. Duas tentativas. Uma regra clara.",
+    "article": "https://brunoangst.com.br/blog/slotguard-primeiro-nucleo-python/",
+    "scenes": [
+      {"kind":"intro","label":"ETAPA 01 / O NÚCLEO","title":"Um horário.\nDuas tentativas.\nUma regra clara.","minDuration":6.5,"captions":["Como um sistema decide se pode aceitar uma reserva?","Foi com essa pergunta que comecei o SlotGuard."]},
+      {"kind":"overlap","label":"01 / RECONHECER O CONFLITO","title":"Quando os horários\nse sobrepõem.","minDuration":8,"captions":["Uma reserva ocupa das nove às dez da manhã.","Outra, das nove e meia às dez e meia, precisa ser rejeitada."]},
+      {"kind":"adjacent","label":"02 / TESTAR A FRONTEIRA","title":"Terminar e começar\nno mesmo instante.","minDuration":8,"captions":["Mas uma reserva das dez às onze pode ser aceita.","O fim de um intervalo não ocupa o início do próximo."]},
+      {"kind":"models","label":"03 / MODELAR O DOMÍNIO","title":"Regras explícitas.\nDados consistentes.","minDuration":8,"captions":["O núcleo usa horários em minutos e modelos imutáveis.","Os intervalos têm duração positiva e ficam dentro de um único dia."]},
+      {"kind":"immutable","label":"04 / PRESERVAR O ESTADO","title":"Uma nova reserva.\nUma nova agenda.","minDuration":8,"captions":["Ao aceitar uma reserva, o domínio devolve uma nova agenda.","A agenda anterior continua intacta, e o conflito sinaliza um erro."]},
+      {"kind":"tdd","label":"05 / CONSTRUIR COM TDD","title":"Uma pergunta.\nUm teste.\nUm pequeno avanço.","minDuration":7.5,"captions":["O desenvolvimento avança em pequenos ciclos de testes.","Primeiro observo a falha. Depois implemento, verifico e reviso."]},
+      {"kind":"tests1","label":"06 / VERIFICAR O COMPORTAMENTO","title":"43 testes.\nUma base para evoluir.","minDuration":8,"captions":["Esta primeira etapa reúne quarenta e três testes automatizados.","Exemplos e testes de propriedades verificam limites e preservação da agenda."]},
+      {"kind":"limits1","label":"07 / O RECORTE DA PRIMEIRA ETAPA","title":"O limite também\nfaz parte da entrega.","minDuration":8,"captions":["Nesse registro, ainda não havia interface, API ou persistência.","A proposta era consolidar o domínio antes de conectar novas camadas."]},
+      {"kind":"closing","label":"REGISTRO 01 / CONTINUE A LEITURA","title":"Leia as decisões.\nExplore o código.\nAcompanhe a evolução.","minDuration":7,"captions":["No artigo, compartilho o processo, as decisões e os próximos passos.","Essa base abre caminho para a segunda etapa do SlotGuard."]}
+    ]
+  },
+  {
+    "stage": 2,
+    "date": "09 NOV 2026",
+    "title": "Do núcleo Python à primeira demonstração pública.",
+    "article": "https://brunoangst.com.br/blog/slotguard-demonstracao-publica/",
+    "scenes": [
+      {"kind":"intro","label":"ETAPA 02 / DEMONSTRAÇÃO PÚBLICA","title":"Do núcleo Python\nà demonstração\npública.","minDuration":6.5,"captions":["O SlotGuard saiu do núcleo de regras e ganhou uma aplicação no ar.","Agora você pode consultar, reservar e acompanhar a agenda na tela."]},
+      {"kind":"architecture","label":"01 / CONECTAR AS CAMADAS","title":"Cada camada\ncom uma responsabilidade.","minDuration":8,"captions":["A interface apresenta os horários e conversa com a API.","As regras de negócio continuam concentradas no domínio Python."]},
+      {"kind":"availability","label":"02 / CONSULTAR A DISPONIBILIDADE","title":"Antes de reservar,\nconsulte.","minDuration":7,"captions":["A agenda começa com uma reserva das nove às dez.","Consultar das dez às onze confirma que horários consecutivos são permitidos."]},
+      {"kind":"reserve","label":"03 / CRIAR UMA RESERVA REAL","title":"10:00 → 11:00\nReserva aceita.","minDuration":7.5,"captions":["Ao reservar, a API devolve a agenda atualizada.","A lista passa a mostrar os dois intervalos, com a confirmação na interface."]},
+      {"kind":"conflict","label":"04 / REJEITAR O CONFLITO","title":"Tente de novo.\nObserve a regra.","minDuration":7.5,"captions":["Uma nova tentativa para o mesmo horário recebe uma resposta de conflito.","A mensagem explica a rejeição, e as reservas aceitas são preservadas."]},
+      {"kind":"ux","label":"05 / CUIDAR DA INTERAÇÃO","title":"Detalhes que protegem\na experiência.","minDuration":8,"captions":["Durante a reserva, os campos e os dois botões ficam bloqueados.","Ao editar horários, a consulta descarta respostas antigas e limpa a mensagem."]},
+      {"kind":"tests2","label":"06 / ACUMULAR EVIDÊNCIAS","title":"114 testes.\nContratos protegidos.","minDuration":8,"captions":["A etapa publicada reúne cento e quatorze testes automatizados.","Eles cobrem o domínio, a interface e a comunicação com a API real."]},
+      {"kind":"deploy","label":"07 / DA MÁQUINA À NUVEM","title":"Construir. Verificar.\nPublicar.","minDuration":8,"captions":["Interface e API são empacotadas juntas em um contêiner.","O fluxo de verificação testa esse pacote no Linux antes da publicação."]},
+      {"kind":"limits2","label":"08 / O RECORTE DESTA VERSÃO","title":"Uma demonstração\ncom limites claros.","minDuration":9,"captions":["A demonstração está no Render gratuito, mas a agenda ainda fica em memória.","Recarregar restaura o início. Persistência e concorrência são os próximos desafios."]},
+      {"kind":"closing","label":"REGISTRO 02 / EXPERIMENTE","title":"Teste. Explore.\nConverse comigo.","minDuration":7,"captions":["Experimente o SlotGuard e conheça as decisões no artigo.","O projeto continua evoluindo, um comportamento verificável de cada vez."]}
+    ]
+  }
+]

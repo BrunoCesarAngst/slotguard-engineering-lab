@@ -1,0 +1,29 @@
+{
+  "sourceCommit": "de827f945a6317bae2bd38217140dad504d96ac0",
+  "testsVerified": 43,
+  "existing": [
+    540,
+    600
+  ],
+  "overlap": true,
+  "adjacent": false,
+  "originalAgenda": [
+    [
+      540,
+      600
+    ]
+  ],
+  "updatedAgenda": [
+    [
+      540,
+      600
+    ],
+    [
+      600,
+      660
+    ]
+  ],
+  "originalUnchanged": true,
+  "conflictRejected": true,
+  "invalidRejected": true
+}

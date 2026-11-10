@@ -1,0 +1,117 @@
+{
+  "url": "http://127.0.0.1:8012/",
+  "recordedAt": "2026-11-09T21:10:48.458Z",
+  "requests": [
+    {
+      "label": "consulta",
+      "status": 200,
+      "request": {
+        "reservas": [
+          {
+            "inicio": 540,
+            "fim": 600
+          }
+        ],
+        "solicitacao": {
+          "inicio": 600,
+          "fim": 660
+        }
+      },
+      "response": {
+        "disponivel": true
+      },
+      "agenda": [
+        "09:00–10:00"
+      ]
+    },
+    {
+      "label": "reserva",
+      "status": 201,
+      "request": {
+        "reservas": [
+          {
+            "inicio": 540,
+            "fim": 600
+          }
+        ],
+        "solicitacao": {
+          "inicio": 600,
+          "fim": 660
+        }
+      },
+      "response": {
+        "reservas": [
+          {
+            "inicio": 540,
+            "fim": 600
+          },
+          {
+            "inicio": 600,
+            "fim": 660
+          }
+        ]
+      },
+      "agenda": [
+        "09:00–10:00",
+        "10:00–11:00"
+      ]
+    },
+    {
+      "label": "conflito",
+      "status": 409,
+      "request": {
+        "reservas": [
+          {
+            "inicio": 540,
+            "fim": 600
+          },
+          {
+            "inicio": 600,
+            "fim": 660
+          }
+        ],
+        "solicitacao": {
+          "inicio": 600,
+          "fim": 660
+        }
+      },
+      "response": {
+        "detail": "Horário indisponível."
+      },
+      "agenda": [
+        "09:00–10:00",
+        "10:00–11:00"
+      ]
+    },
+    {
+      "label": "invalida",
+      "status": 422,
+      "request": {
+        "reservas": [
+          {
+            "inicio": 540,
+            "fim": 600
+          },
+          {
+            "inicio": 600,
+            "fim": 660
+          }
+        ],
+        "solicitacao": {
+          "inicio": 600,
+          "fim": 600
+        }
+      },
+      "response": {
+        "detail": "Intervalo inválido."
+      },
+      "agenda": [
+        "09:00–10:00",
+        "10:00–11:00"
+      ]
+    }
+  ],
+  "reloaded": [
+    "09:00–10:00"
+  ]
+}

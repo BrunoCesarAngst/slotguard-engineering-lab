@@ -1,0 +1,12 @@
+name: slotguard-video
+services:
+  produtor:
+    image: slotguard-video:local
+    build:
+      context: .
+    user: "${SLOTGUARD_VIDEO_UID:-1000}:${SLOTGUARD_VIDEO_GID:-1000}"
+    init: true
+    network_mode: none
+    shm_size: 1gb
+    volumes:
+      - "${SLOTGUARD_VIDEO_OUTPUT:-./output}:/output"

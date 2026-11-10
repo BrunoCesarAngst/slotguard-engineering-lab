@@ -1,0 +1,25 @@
+{
+  "name": "slotguard-video",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.tsx",
+    "narrar:completos": ".venv/bin/python scripts/narrar-completos.py",
+    "render:completos": "node scripts/render-completos.mjs",
+    "preview:completos": "node scripts/render-completos.mjs --preview",
+    "video:check": "node scripts/produzir.mjs --check",
+    "video:plano": "node scripts/produzir.mjs --plan",
+    "video:previa": "node scripts/produzir.mjs --preview",
+    "video:gerar": "node scripts/produzir.mjs --gerar",
+    "video:smoke": "node scripts/produzir.mjs --smoke"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.542",
+    "@remotion/cli": "4.0.542",
+    "@remotion/renderer": "4.0.542",
+    "playwright": "1.65.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.542"
+  }
+}

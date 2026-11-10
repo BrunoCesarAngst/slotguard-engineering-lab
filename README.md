@@ -49,6 +49,27 @@ checagem de tipos TypeScript e testes com Vitest. Os workflows Python Quality
 e TypeScript Quality executam no GitHub Actions, incluindo uma chamada real
 do cliente TypeScript à API Python.
 
+## Divulgação e vídeos
+
+A rotina de divulgação usa o **YouTube @mbcangst como publicação principal**.
+Os posts nas outras redes usam textos adaptados e o link; o site incorpora o
+vídeo. As publicações nativas já realizadas são preservadas.
+
+Consulte a [rotina permanente, critérios de etapa e limites da automação](docs/PUBLICACAO.md).
+O produtor está versionado em [`video/`](video/README.md), separado da aplicação.
+Com Docker e Compose em execução, gere os vídeos sem instalar Node, Python ou
+FFmpeg na máquina:
+
+```bash
+bash video/gerar.sh --check
+bash video/gerar.sh --gerar
+```
+
+Os resultados ficam em `video/output/` e não entram no Git. A primeira construção
+da imagem baixa as dependências e os modelos; a geração roda sem rede.
+Uma etapa deve representar uma entrega demonstrável com evidências revisadas;
+novos commits não disparam publicações automaticamente.
+
 ## Retomar o desenvolvimento
 
 Com as dependências já instaladas, na raiz do projeto:
