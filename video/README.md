@@ -107,8 +107,30 @@ não publicam conteúdo nem contêm credenciais.
 
 O piloto antigo continua preservado fora do repositório; este produtor registra
 as composições completas. Renovar capturas exige preparar e executar a aplicação
-separadamente. O workflow de geração no GitHub Actions e o gatilho editorial
-por marco ainda não foram implementados.
+separadamente. O gatilho editorial automático por marco ainda não foi implementado.
+
+### Gerar pelo GitHub Actions
+
+No repositório, abra **Actions → SlotGuard Videos → Run workflow**. Escolha:
+
+- `completos`: renderiza e verifica os vídeos integrais (padrão);
+- `previas`: prepara voz, legendas e quadros de revisão;
+- `smoke`: produz e verifica amostras de dois segundos;
+- uma versão específica ou `todos` para as quatro combinações.
+
+O workflow é somente manual, executa em Linux AMD64 e constrói o Docker com
+cache de camadas. A produção usa rede desativada, sem dependências ou arquivos
+do computador de Bruno. Há limite de 60 minutos e uma execução por branch de
+cada vez. As cotas e políticas da conta GitHub continuam aplicáveis.
+
+Ao terminar, abra **Artifacts** na execução e baixe o pacote. Ele inclui MP4,
+SRT/VTT, prévias, log e relatórios; ficam de fora modelos, WAV de cache e cópias
+anteriores. A retenção é de **sete dias**: salve os arquivos necessários antes
+de expirarem. Em caso de erro, os arquivos disponíveis também são enviados
+para diagnóstico, e isso não transforma a execução em sucesso.
+
+O workflow não publica a imagem em um registry nem envia vídeos ao YouTube.
+Uma nova etapa ainda exige roteiro e evidências revisados no repositório.
 
 ## Validação realizada
 

@@ -1,0 +1,153 @@
+name: SlotGuard Videos
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Material a gerar
+        required: true
+        default: completos
+        type: choice
+        options:
+          - completos
+          - previas
+          - smoke
+      video:
+        description: Versão do vídeo (narração prepara as duas etapas)
+        required: true
+        default: todos
+        type: choice
+        options:
+          - todos
+          - Etapa1Vertical
+          - Etapa1Horizontal
+          - Etapa2Vertical
+          - Etapa2Horizontal
+
+permissions:
+  contents: read
+
+concurrency:
+  group: slotguard-videos-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    env:
+      VIDEO_MODE: ${{ inputs.mode }}
+      VIDEO_SELECTION: ${{ inputs.video }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Prepare output directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/slotguard-video"
+          printf 'VIDEO_OUTPUT=%s/slotguard-video\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build video producer
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: ./video
+          file: ./video/Dockerfile
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: slotguard-video:ci
+          cache-from: type=gha,scope=slotguard-video
+          cache-to: type=gha,mode=min,scope=slotguard-video
+
+      - name: Check producer dependencies
+        run: |
+          set -euo pipefail
+          mkdir -p "$VIDEO_OUTPUT"
+          docker run --rm --init --network none --shm-size 1g \
+            --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=$VIDEO_OUTPUT,target=/output" \
+            slotguard-video:ci --check
+
+      - name: Generate and verify videos
+        run: |
+          set -euo pipefail
+          case "$VIDEO_MODE" in
+            completos) mode=--gerar ;;
+            previas) mode=--preview ;;
+            smoke) mode=--smoke ;;
+            *) echo 'Modo inválido' >&2; exit 2 ;;
+          esac
+          args=("$mode")
+          case "$VIDEO_SELECTION" in
+            todos) ;;
+            Etapa1Vertical|Etapa1Horizontal|Etapa2Vertical|Etapa2Horizontal)
+              args+=("--only=$VIDEO_SELECTION") ;;
+            *) echo 'Vídeo inválido' >&2; exit 2 ;;
+          esac
+          docker run --rm --init --network none --shm-size 1g \
+            --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=$VIDEO_OUTPUT,target=/output" \
+            slotguard-video:ci "${args[@]}" 2>&1 | tee "$VIDEO_OUTPUT/render.log"
+
+      - name: Check deliverables
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          reports=("$VIDEO_OUTPUT"/runs/*/producao.json)
+          previews=("$VIDEO_OUTPUT"/completos/*/*.jpg)
+          test "${#reports[@]}" -gt 0
+          test "${#previews[@]}" -gt 0
+          test -s "$VIDEO_OUTPUT/slotguard-etapa-1.srt"
+          test -s "$VIDEO_OUTPUT/slotguard-etapa-2.srt"
+          if [[ "$VIDEO_MODE" != previas ]]; then
+            videos=("$VIDEO_OUTPUT"/*.mp4)
+            expected=1
+            if [[ "$VIDEO_SELECTION" == todos ]]; then expected=4; fi
+            test "${#videos[@]}" -eq "$expected"
+          fi
+
+      - name: Save videos and reports
+        id: artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: slotguard-${{ inputs.mode }}-${{ inputs.video }}-${{ github.run_number }}
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: warn
+          path: |
+            ${{ env.VIDEO_OUTPUT }}/*.mp4
+            ${{ env.VIDEO_OUTPUT }}/*.srt
+            ${{ env.VIDEO_OUTPUT }}/*.vtt
+            ${{ env.VIDEO_OUTPUT }}/*.json
+            ${{ env.VIDEO_OUTPUT }}/render.log
+            ${{ env.VIDEO_OUTPUT }}/completos/**/*.jpg
+            ${{ env.VIDEO_OUTPUT }}/runs/*/producao.json
+
+      - name: Summarize result
+        if: ${{ always() }}
+        env:
+          RESULT: ${{ job.status }}
+          ARTIFACT_URL: ${{ steps.artifacts.outputs.artifact-url }}
+        run: |
+          {
+            printf '## SlotGuard — produção de vídeos\n\n'
+            printf -- '- Resultado: %s\n' "$RESULT"
+            printf -- '- Commit: %s\n' "$GITHUB_SHA"
+            printf -- '- Modo: %s; seleção: %s\n' "$VIDEO_MODE" "$VIDEO_SELECTION"
+            printf -- '- Rede desativada durante síntese e renderização.\n'
+            printf -- '- Artefatos guardados por sete dias; cache de voz e modelos não são enviados.\n'
+            if [[ -n "$ARTIFACT_URL" ]]; then
+              printf '\n[Baixar arquivos e relatórios](%s)\n' "$ARTIFACT_URL"
+            fi
+            printf '\nRevisar voz e imagem antes de divulgar. Este workflow não publica no YouTube.\n'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -67,6 +67,8 @@ bash video/gerar.sh --gerar
 
 Os resultados ficam em `video/output/` e não entram no Git. A primeira construção
 da imagem baixa as dependências e os modelos; a geração roda sem rede.
+Também é possível gerar sem Docker local em **Actions → SlotGuard Videos →
+Run workflow**, baixando os resultados como artefatos mantidos por sete dias.
 Uma etapa deve representar uma entrega demonstrável com evidências revisadas;
 novos commits não disparam publicações automaticamente.
 

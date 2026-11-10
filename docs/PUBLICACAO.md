@@ -78,12 +78,12 @@ baixados com SHA-256 conferido durante o build, sem entrar no Git. A narração 
 a renderização rodam sem rede, com cache de voz e resultados em `video/output/`.
 Dados de login não entram na imagem. Use `bash video/gerar.sh --gerar` na raiz.
 
-Depois de validar a imagem no Linux, adicionar execução manual por marco no
-GitHub Actions, com cache e artefatos. Avaliar duração e cotas reais antes de
-prometer custo zero. Não renderizar vídeos no serviço gratuito do Render que
-hospeda a demonstração.
+O workflow manual **SlotGuard Videos** gera os vídeos no GitHub Actions, com
+cache de camadas Docker e artefatos mantidos por sete dias. Escolher modo e
+versão em Actions → Run workflow. Avaliar duração e cotas reais antes de
+prometer custo zero. Não renderizar vídeos no serviço Render da demonstração.
 
-**Ainda não implementados:** workflow de renderização e gatilho por marco.
+**Ainda não implementado:** gatilho editorial automático por marco.
 A geração atual precisa de Docker/Compose e assets aprovados; não descobre ou narra uma
 nova funcionalidade automaticamente. As cenas atuais são específicas das
 etapas 1 e 2 e precisam ser adaptadas para uma etapa nova.
