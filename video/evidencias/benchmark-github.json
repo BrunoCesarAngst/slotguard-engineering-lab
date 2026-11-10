@@ -1,0 +1,468 @@
+{
+  "status": "technically_validated",
+  "baseline": 3,
+  "candidates": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "rounds": 2,
+  "frameCount": 90,
+  "settings": {
+    "codec": "h264",
+    "audioCodec": "aac",
+    "pixelFormat": "yuv420p",
+    "crf": 18
+  },
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "logicalCpus": 4,
+    "memoryBytes": 16760344576
+  },
+  "samples": [
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 1,
+      "concurrency": 3,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 9536.339926999999,
+      "file": "animacao-r1-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 1,
+      "concurrency": 1,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 8513.256242000003,
+      "file": "animacao-r1-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 1,
+      "concurrency": 4,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 10539.111883999998,
+      "file": "animacao-r1-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 1,
+      "concurrency": 2,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 8302.507138,
+      "file": "animacao-r1-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 2,
+      "concurrency": 2,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 8779.232851,
+      "file": "animacao-r2-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 2,
+      "concurrency": 4,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 9917.271305999995,
+      "file": "animacao-r2-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 2,
+      "concurrency": 1,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 8524.298934999999,
+      "file": "animacao-r2-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "animacao",
+      "composition": "Etapa1Vertical",
+      "round": 2,
+      "concurrency": 3,
+      "frameRange": [
+        30,
+        119
+      ],
+      "elapsedMs": 9134.735042999993,
+      "file": "animacao-r2-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 1,
+      "concurrency": 3,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 17452.388114,
+      "file": "reserva-com-video-r1-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 1,
+      "concurrency": 1,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 13875.057361999992,
+      "file": "reserva-com-video-r1-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 1,
+      "concurrency": 4,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 20571.830877,
+      "file": "reserva-com-video-r1-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 1,
+      "concurrency": 2,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 13373.18826699999,
+      "file": "reserva-com-video-r1-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 2,
+      "concurrency": 2,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 13294.261213999998,
+      "file": "reserva-com-video-r2-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 2,
+      "concurrency": 4,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 18810.06545200001,
+      "file": "reserva-com-video-r2-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 2,
+      "concurrency": 1,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 13233.169437000004,
+      "file": "reserva-com-video-r2-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "reserva-com-video",
+      "composition": "Etapa2Vertical",
+      "round": 2,
+      "concurrency": 3,
+      "frameRange": [
+        954,
+        1043
+      ],
+      "elapsedMs": 15097.496574999997,
+      "file": "reserva-com-video-r2-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 1,
+      "concurrency": 3,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 9313.722454999981,
+      "file": "conflito-r1-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 1,
+      "concurrency": 1,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 8514.321571999986,
+      "file": "conflito-r1-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 1,
+      "concurrency": 4,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 10418.62833800001,
+      "file": "conflito-r1-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 1,
+      "concurrency": 2,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 8116.367696000001,
+      "file": "conflito-r1-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 2,
+      "concurrency": 2,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 8334.207882999966,
+      "file": "conflito-r2-c2.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 2,
+      "concurrency": 4,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 10016.54229100002,
+      "file": "conflito-r2-c4.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 2,
+      "concurrency": 1,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 8592.301520999987,
+      "file": "conflito-r2-c1.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    },
+    {
+      "case": "conflito",
+      "composition": "Etapa2Horizontal",
+      "round": 2,
+      "concurrency": 3,
+      "frameRange": [
+        1246,
+        1335
+      ],
+      "elapsedMs": 8979.520117999986,
+      "file": "conflito-r2-c3.mp4",
+      "quality": {
+        "decode": "ok",
+        "audioMatchesBaseline": true,
+        "ssim": 1.0
+      }
+    }
+  ],
+  "roundTotalsMs": {
+    "1": [
+      30902.63517599998,
+      30349.76989299999
+    ],
+    "2": [
+      29792.063100999992,
+      30407.701947999965
+    ],
+    "3": [
+      36302.45049599998,
+      33211.75173599998
+    ],
+    "4": [
+      41529.57109900001,
+      38743.879049000025
+    ]
+  },
+  "averageTotalsMs": {
+    "1": 30626.202534499986,
+    "2": 30099.88252449998,
+    "3": 34757.101115999976,
+    "4": 40136.725074000016
+  },
+  "selectedConcurrency": 2,
+  "measuredGain": 0.13399329754103417,
+  "selectionRule": ">=5% de ganho médio e melhor nas duas rodadas; senão manter 3",
+  "github": {
+    "runUrl": "https://github.com/BrunoCesarAngst/slotguard-engineering-lab/actions/runs/42742253589",
+    "commit": "4bb11c1",
+    "runner": "ubuntu-24.04",
+    "repositoryVisibility": "public"
+  }
+}

@@ -42,6 +42,8 @@ jobs:
     env:
       VIDEO_MODE: ${{ inputs.mode }}
       VIDEO_SELECTION: ${{ inputs.video }}
+      # Medido em ubuntu-24.04: video/evidencias/benchmark-github.json.
+      SLOTGUARD_RENDER_CONCURRENCY: "2"
 
     steps:
       - name: Checkout
@@ -102,6 +104,7 @@ jobs:
           docker run --rm --init --network none --shm-size 1g \
             --user "$(id -u):$(id -g)" \
             --mount "type=bind,source=$VIDEO_OUTPUT,target=/output" \
+            --env SLOTGUARD_RENDER_CONCURRENCY \
             slotguard-video:ci "${args[@]}" 2>&1 | tee "$VIDEO_OUTPUT/render.log"
 
       - name: Check deliverables
@@ -155,6 +158,7 @@ jobs:
             printf -- '- Resultado: %s\n' "$RESULT"
             printf -- '- Commit: %s\n' "$GITHUB_SHA"
             printf -- '- Modo: %s; seleção: %s\n' "$VIDEO_MODE" "$VIDEO_SELECTION"
+            printf -- '- Paralelismo de produção: %s quadros; benchmark compara 1, 2, 3 e 4.\n' "$SLOTGUARD_RENDER_CONCURRENCY"
             printf -- '- Rede desativada durante síntese e renderização.\n'
             printf -- '- Artefatos: um dia no benchmark, sete dias nos demais modos; sem cache de voz ou modelos.\n'
             if [[ -n "$ARTIFACT_URL" ]]; then

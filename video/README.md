@@ -142,6 +142,40 @@ para diagnóstico, e isso não transforma a execução em sucesso.
 O workflow não publica a imagem em um registry nem envia vídeos ao YouTube.
 Uma nova etapa ainda exige roteiro e evidências revisados no repositório.
 
+### Paralelismo medido no GitHub
+
+O workflow usa **dois quadros simultâneos**, configurados por
+`SLOTGUARD_RENDER_CONCURRENCY` e registrados em `producao.json`.
+O padrão local continua em três: o resultado depende da máquina.
+Somente o paralelismo mudou; resolução, fps, CRF, codec, áudio e conteúdo foram
+preservados. Não foram adicionados runners maiores, GPU ou serviços pagos.
+
+No [benchmark no GitHub](https://github.com/BrunoCesarAngst/slotguard-engineering-lab/actions/runs/42742253589),
+em Ubuntu 24.04 x64 com quatro CPUs lógicas, as médias da soma dos três trechos
+por rodada foram:
+
+| Quadros simultâneos | Tempo médio dos três trechos |
+| --- | --- |
+| 1 | 30,63 s |
+| **2** | **30,10 s** |
+| 3 (anterior) | 34,76 s |
+| 4 | 40,14 s |
+
+Dois quadros reduziram o tempo medido em **13,4%** contra o padrão anterior,
+com melhora nas duas rodadas. Todas as 24 amostras passaram na decodificação,
+formato e contagem de quadros; SSIM foi 1,0 e o áudio decodificado foi idêntico
+ao baseline de cada cenário/rodada. O ganho é dos trechos de três segundos,
+não uma medição da nova duração dos quatro vídeos completos. Preparação da
+imagem, narração e upload também compõem o tempo total da execução.
+
+Os dados estão em [evidencias/benchmark-github.json](evidencias/benchmark-github.json).
+Para repetir, execute `--benchmark` no Docker ou escolha `benchmark` e `todos`
+no workflow. A comparação não troca o padrão automaticamente. Reavaliar após
+mudanças relevantes nas cenas, dependências ou máquina do GitHub.
+
+Referências: [desempenho no Remotion](https://www.remotion.dev/docs/performance)
+e [gratuidade dos runners padrão em repositórios públicos](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+
 ## Validação realizada
 
 Em 9 de novembro de 2026, foram construídas as imagens Linux ARM64 e AMD64

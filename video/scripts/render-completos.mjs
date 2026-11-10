@@ -8,6 +8,7 @@ const preview=process.argv.includes('--preview');
 const only=process.argv.find(x=>x.startsWith('--only='))?.split('=')[1];
 const smoke=process.argv.includes('--smoke');
 const browserExecutable=process.env.REMOTION_BROWSER_EXECUTABLE;
+console.log(`Renderização com ${renderConcurrency} quadros simultâneos; H.264/AAC, CRF 18.`);
 // node_modules é somente leitura; cada execução já usa um diretório temporário.
 const serveUrl=await bundle({entryPoint:path.resolve('src/index.tsx'),enableCaching:false});
 const browser=await openBrowser('chrome',{browserExecutable});

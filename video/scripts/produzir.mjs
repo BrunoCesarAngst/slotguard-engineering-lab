@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {cp, mkdir, readFile, stat, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {renderConcurrency, renderSettings} from './render-settings.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modes = new Set(['--check', '--plan', '--preview', '--gerar', '--smoke', '--benchmark']);
@@ -87,6 +88,7 @@ for (const file of previous) {
 }
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const report = {mode, only: only ?? null, platform: process.platform, arch: process.arch, node: process.version, startedAt: new Date().toISOString(), status: 'running',
+  renderConcurrency: mode === '--benchmark' ? null : renderConcurrency, renderSettings,
   scriptSha256: sha256(await readFile(path.join(root, 'roteiros-completos.json'))), steps: []};
 const saveReport = () => writeFile(path.join(runDir, 'producao.json'), JSON.stringify(report, null, 2) + '\n');
 await saveReport();
