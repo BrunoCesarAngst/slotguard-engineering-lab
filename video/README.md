@@ -25,6 +25,14 @@ bash video/gerar.sh --gerar
 - `--smoke`: produz quatro amostras de 2 segundos e as verifica; não equivale
   à validação dos vídeos completos. Os arquivos têm sufixo `-smoke`.
 - `--plan`: mostra os passos, sem executar a produção.
+- `--benchmark`: compara 1, 2, 3 e 4 quadros simultâneos em três trechos de
+  três segundos, com aquecimento e duas rodadas em ordem invertida. Mantém
+  Full HD, 30 fps e os mesmos ajustes de imagem/áudio da produção. Não aceita
+  `--only`; usa animação, reserva com vídeo e conflito, nos dois formatos.
+  Salva amostras em `output/benchmark/` e tempos/ambiente em `benchmark.json`.
+  Confere decodificação, resolução, duração, áudio idêntico ao baseline 3 e
+  similaridade visual SSIM >= 0,9999. Recomenda mudar somente se houver ganho
+  médio >= 5% e melhora em ambas as rodadas; não altera o padrão automaticamente.
 
 Para renderizar apenas um vídeo:
 
@@ -116,6 +124,7 @@ No repositório, abra **Actions → SlotGuard Videos → Run workflow**. Escolha
 - `completos`: renderiza e verifica os vídeos integrais (padrão);
 - `previas`: prepara voz, legendas e quadros de revisão;
 - `smoke`: produz e verifica amostras de dois segundos;
+- `benchmark`: compara o processamento paralelo; usar a seleção `todos`;
 - uma versão específica ou `todos` para as quatro combinações.
 
 O workflow é somente manual, executa em Linux AMD64 e constrói o Docker com
@@ -126,7 +135,8 @@ cada vez. As cotas e políticas da conta GitHub continuam aplicáveis.
 Ao terminar, abra **Artifacts** na execução e baixe o pacote. Ele inclui MP4,
 SRT/VTT, prévias, log e relatórios; ficam de fora modelos, WAV de cache e cópias
 anteriores. A retenção é de **sete dias**: salve os arquivos necessários antes
-de expirarem. Em caso de erro, os arquivos disponíveis também são enviados
+de expirarem. No benchmark, as amostras e o relatório duram **um dia** para
+limitar armazenamento. Em caso de erro, os arquivos disponíveis também são enviados
 para diagnóstico, e isso não transforma a execução em sucesso.
 
 O workflow não publica a imagem em um registry nem envia vídeos ao YouTube.

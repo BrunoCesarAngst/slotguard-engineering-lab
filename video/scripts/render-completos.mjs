@@ -2,6 +2,7 @@ import {bundle} from '@remotion/bundler';
 import {openBrowser,selectComposition,renderMedia,renderStill} from '@remotion/renderer';
 import {mkdir,readFile} from 'node:fs/promises';
 import path from 'node:path';
+import {renderSettings, renderConcurrency} from './render-settings.mjs';
 const stages=JSON.parse(await readFile('src/completos.json','utf8'));
 const preview=process.argv.includes('--preview');
 const only=process.argv.find(x=>x.startsWith('--only='))?.split('=')[1];
@@ -27,7 +28,7 @@ for(const stage of stages){
   if(!preview){
    let last=-1;
    const outputLocation=`output/slotguard-etapa-${stage.stage}-${format.toLowerCase()}${smoke?'-smoke':''}.mp4`;
-   await renderMedia({serveUrl,composition,outputLocation,browserExecutable,puppeteerInstance:browser,...(smoke?{frameRange:[0,59]}:{}),codec:'h264',audioCodec:'aac',pixelFormat:'yuv420p',crf:18,concurrency:3,onProgress:({progress})=>{const p=Math.floor(progress*10);if(p!==last){last=p;console.log(`${id}: ${p*10}%`);}}});
+   await renderMedia({serveUrl,composition,outputLocation,browserExecutable,puppeteerInstance:browser,...(smoke?{frameRange:[0,59]}:{}),...renderSettings,concurrency:renderConcurrency,onProgress:({progress})=>{const p=Math.floor(progress*10);if(p!==last){last=p;console.log(`${id}: ${p*10}%`);}}});
    console.log(`${id}: vídeo concluído.`);
   }
  }

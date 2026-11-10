@@ -12,6 +12,7 @@ on:
           - completos
           - previas
           - smoke
+          - benchmark
       video:
         description: Versão do vídeo (narração prepara as duas etapas)
         required: true
@@ -84,9 +85,14 @@ jobs:
             completos) mode=--gerar ;;
             previas) mode=--preview ;;
             smoke) mode=--smoke ;;
+            benchmark) mode=--benchmark ;;
             *) echo 'Modo inválido' >&2; exit 2 ;;
           esac
           args=("$mode")
+          if [[ "$VIDEO_MODE" == benchmark && "$VIDEO_SELECTION" != todos ]]; then
+            echo 'Benchmark usa os três cenários fixos; selecione todos.' >&2
+            exit 2
+          fi
           case "$VIDEO_SELECTION" in
             todos) ;;
             Etapa1Vertical|Etapa1Horizontal|Etapa2Vertical|Etapa2Horizontal)
@@ -105,10 +111,14 @@ jobs:
           reports=("$VIDEO_OUTPUT"/runs/*/producao.json)
           previews=("$VIDEO_OUTPUT"/completos/*/*.jpg)
           test "${#reports[@]}" -gt 0
-          test "${#previews[@]}" -gt 0
           test -s "$VIDEO_OUTPUT/slotguard-etapa-1.srt"
           test -s "$VIDEO_OUTPUT/slotguard-etapa-2.srt"
-          if [[ "$VIDEO_MODE" != previas ]]; then
+          if [[ "$VIDEO_MODE" == benchmark ]]; then
+            test -s "$VIDEO_OUTPUT/benchmark.json"
+          else
+            test "${#previews[@]}" -gt 0
+          fi
+          if [[ "$VIDEO_MODE" != previas && "$VIDEO_MODE" != benchmark ]]; then
             videos=("$VIDEO_OUTPUT"/*.mp4)
             expected=1
             if [[ "$VIDEO_SELECTION" == todos ]]; then expected=4; fi
@@ -121,7 +131,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: slotguard-${{ inputs.mode }}-${{ inputs.video }}-${{ github.run_number }}
-          retention-days: 7
+          retention-days: ${{ inputs.mode == 'benchmark' && 1 || 7 }}
           compression-level: 0
           if-no-files-found: warn
           path: |
@@ -132,6 +142,7 @@ jobs:
             ${{ env.VIDEO_OUTPUT }}/render.log
             ${{ env.VIDEO_OUTPUT }}/completos/**/*.jpg
             ${{ env.VIDEO_OUTPUT }}/runs/*/producao.json
+            ${{ env.VIDEO_OUTPUT }}/benchmark/*.mp4
 
       - name: Summarize result
         if: ${{ always() }}
@@ -145,7 +156,7 @@ jobs:
             printf -- '- Commit: %s\n' "$GITHUB_SHA"
             printf -- '- Modo: %s; seleção: %s\n' "$VIDEO_MODE" "$VIDEO_SELECTION"
             printf -- '- Rede desativada durante síntese e renderização.\n'
-            printf -- '- Artefatos guardados por sete dias; cache de voz e modelos não são enviados.\n'
+            printf -- '- Artefatos: um dia no benchmark, sete dias nos demais modos; sem cache de voz ou modelos.\n'
             if [[ -n "$ARTIFACT_URL" ]]; then
               printf '\n[Baixar arquivos e relatórios](%s)\n' "$ARTIFACT_URL"
             fi

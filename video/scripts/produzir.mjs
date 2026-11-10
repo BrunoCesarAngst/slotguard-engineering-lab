@@ -6,16 +6,20 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const modes = new Set(['--check', '--plan', '--preview', '--gerar', '--smoke']);
+const modes = new Set(['--check', '--plan', '--preview', '--gerar', '--smoke', '--benchmark']);
 const args = process.argv.slice(2);
 const only = args[1]?.match(/^--only=(Etapa[12](?:Vertical|Horizontal))$/)?.[1];
-if (!modes.has(args[0]) || args.length > 2 || (args.length === 2 && !only)) {
-  console.error('Use --check, --plan, --preview, --gerar ou --smoke, seguido opcionalmente de --only=Etapa2Horizontal.');
+if (!modes.has(args[0]) || args.length > 2 || (args.length === 2 && (!only || args[0] === '--benchmark'))) {
+  console.error('Use --check, --plan, --preview, --gerar, --smoke ou --benchmark, seguido opcionalmente de --only=Etapa2Horizontal.');
   process.exit(2);
 }
 const mode = args[0];
 const python = path.join(root, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
-const steps = [
+const steps = args[0] === '--benchmark' ? [
+  [python, ['scripts/narrar-completos.py']],
+  [process.execPath, ['scripts/benchmark.mjs']],
+  [python, ['scripts/verificar-benchmark.py']],
+] : [
   [python, ['scripts/narrar-completos.py']],
   [process.execPath, ['scripts/render-completos.mjs', ...(mode === '--preview' ? ['--preview'] : []), ...(mode === '--smoke' ? ['--smoke'] : []), ...(only ? [`--only=${only}`] : [])]],
   ...(mode === '--preview' ? [] : [[python, ['scripts/verificar-completos.py', ...(mode === '--smoke' ? ['--smoke'] : []), ...(only ? [`--only=${only}`] : [])]]]),
